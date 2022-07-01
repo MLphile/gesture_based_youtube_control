@@ -1,7 +1,10 @@
 from model_architecture import model
 import pandas as pd
 import mediapipe as mp
+# import vlc
+from vlc_controls import control_vlc, media
 from utils import *
+
 
 # Camera dimensions
 width = 960
@@ -68,12 +71,15 @@ while True:
             # inference
             pred = predict(preprocessed, model)
             command = labels[pred]
+
+            # pass command to vlc
+            control_vlc(command, media)
+
             cv.putText(frame, f'COMMAND: {command}', (int(width*0.05), int(height*0.1)),
-                       cv.FONT_HERSHEY_COMPLEX, 1, (181, 54, 181), 3, cv.LINE_AA)
+                       cv.FONT_HERSHEY_COMPLEX, 1, (22, 69, 22), 3, cv.LINE_AA)
+
             # Write to the dataset file (if mode == 1)
             logging_csv(class_id, mode, preprocessed)
-
-    # Annotate frame
 
     frame = draw_info(frame, mode, class_id)
     cv.imshow('', frame)
