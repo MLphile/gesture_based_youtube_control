@@ -5,8 +5,6 @@ media = vlc.MediaPlayer(media_pth)
 
 
 def control_vlc(command, media):
-    min_vol = 0
-    max_vol = 401
 
     if command == 'Play':
         media.play()
@@ -17,14 +15,10 @@ def control_vlc(command, media):
     elif command == 'Stop':
         media.stop()
 
-    elif command == 'Unmute':
+    elif command == 'Volume_Up':
         current_vol = media.audio_get_volume()
-        for i in range(current_vol, max_vol, 1):
-            media.audio_set_volume(i)
+        media.audio_set_volume(current_vol + 1)
 
-    elif command == 'Mute':
+    elif command == 'Volume_Down':
         current_vol = media.audio_get_volume()
-        for i in range(current_vol, min_vol, - 1):
-            media.audio_set_volume(i)
-    elif command == 'Middle_Vol':
-        media.audio_set_volume(200)
+        media.audio_set_volume(current_vol - 1)
