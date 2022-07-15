@@ -70,6 +70,7 @@ while True:
 
             # inference
             pred = predict(preprocessed, model)
+            
             command = labels[pred]
 
             # pass command to vlc
