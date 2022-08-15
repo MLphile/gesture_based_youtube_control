@@ -2,9 +2,9 @@ import csv
 import cv2 as cv
 import numpy as np
 import torch
+
+
 # Running mode (normal or data logging)
-
-
 def select_mode(key, mode):
     class_id = -1
     if 48 <= key <= 57:  # class_id
