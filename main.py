@@ -1,19 +1,23 @@
 from model_architecture import model
 import pandas as pd
 import mediapipe as mp
-# import vlc
-from vlc_controls import control_vlc, media
 from utils import *
 
 
-# Camera dimensions
-width = 960
-height = 540
+# Camera resolution
+width = 1280//2
+height = 720//2
+
 
 # Camera setting
 cap = cv.VideoCapture(0)
 cap.set(cv.CAP_PROP_FRAME_WIDTH, width)
 cap.set(cv.CAP_PROP_FRAME_HEIGHT, height)
+
+
+# Screen size
+screen_size = pyautogui.size()
+
 
 # Hand detector
 mp_hands = mp.solutions.hands
@@ -34,7 +38,7 @@ mode = 0  # mode normal by default
 
 while True:
 
-    key = cv.waitKey(10)
+    key = cv.waitKey(1)
     if key == ord('q'):
         break
 
@@ -69,18 +73,29 @@ while True:
                 coordinates_list)
 
             # inference
-            pred = predict(preprocessed, model)
+            # pred = predict(preprocessed, model)
+            # command = labels[pred]
+
+            # activate/deactivate mouse_mode
+            mouse_mode = True
+            x, y = frame_to_screen(coordinates_list[6], frame.shape[:2], screen_size)
+            move_mouse(x, y, mouse_mode)
+            # print('wrist:', coordinates_list[0]) 
             
-            command = labels[pred]
+            # keyboard
 
-            # pass command to vlc
-            control_vlc(command, media)
+            # mouse
 
-            cv.putText(frame, f'COMMAND: {command}', (int(width*0.05), int(height*0.1)),
-                       cv.FONT_HERSHEY_COMPLEX, 1, (22, 69, 22), 3, cv.LINE_AA)
+            
+
+            # cv.putText(frame, f'COMMAND: {command}', (int(width*0.05), int(height*0.1)),
+            #            cv.FONT_HERSHEY_COMPLEX, 1, (22, 69, 22), 3, cv.LINE_AA)
 
             # Write to the dataset file (if mode == 1)
             logging_csv(class_id, mode, preprocessed)
+
+        
+
 
     frame = draw_info(frame, mode, class_id)
     cv.imshow('', frame)
