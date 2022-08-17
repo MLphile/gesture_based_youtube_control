@@ -5,8 +5,8 @@ from utils import *
 
 
 # Camera resolution
-width = 1280//2
-height = 720//2
+width = 1280//4
+height = 720//4
 
 
 # Camera setting
@@ -17,6 +17,12 @@ cap.set(cv.CAP_PROP_FRAME_HEIGHT, height)
 
 # Screen size
 screen_size = pyautogui.size()
+
+# Mouse mouvement stabilization
+smooth_factor = 6
+
+plocX, plocY = 0, 0 # previous x, y locations
+clocX, clocY = 0, 0 # current x, y locations
 
 
 # Hand detector
@@ -34,7 +40,8 @@ model.load_state_dict(torch.load('model.pth'))
 # Load Label
 labels = pd.read_csv('data/label.csv', header=None).values.flatten().tolist()
 
-mode = 0  # mode normal by default
+# mode normal (don't record data for training)
+mode = 0  
 
 while True:
 
@@ -54,7 +61,9 @@ while True:
     frame = cv.flip(frame, 1)
     frame_rgb = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
 
-    # landmarks detection
+    # Detection zone
+    zone = detection_zone(frame)
+
     results = hands.process(frame_rgb)
 
     # if detection
@@ -69,27 +78,44 @@ while True:
             coordinates_list = calc_landmark_coordinates(frame, hand_landmarks)
 
             # Conversion to relative coordinates and normalized coordinates
-            preprocessed = pre_process_landmark(
-                coordinates_list)
+            preprocessed = pre_process_landmark(coordinates_list)
 
-            # inference
-            # pred = predict(preprocessed, model)
-            # command = labels[pred]
+            # print(coordinates_list[8])
 
-            # activate/deactivate mouse_mode
-            mouse_mode = True
-            x, y = frame_to_screen(coordinates_list[6], frame.shape[:2], screen_size)
-            move_mouse(x, y, mouse_mode)
-            # print('wrist:', coordinates_list[0]) 
-            
-            # keyboard
+            # check if hand (middle finger tip and wrist) is inside the detection zone for gesture recognition
+            if cv.pointPolygonTest(zone, coordinates_list[9], False) == 1: 
+                print('inside')
 
-            # mouse
+                
 
-            
+                # inference
+                # pred = predict(preprocessed, model)
+                # gesture = labels[pred]
 
-            # cv.putText(frame, f'COMMAND: {command}', (int(width*0.05), int(height*0.1)),
-            #            cv.FONT_HERSHEY_COMPLEX, 1, (22, 69, 22), 3, cv.LINE_AA)
+                # activate/deactivate mouse mode
+                gesture = 'mouse_on'
+                
+                
+                # keyboard
+
+                # mouse
+                
+                if  gesture == 'mouse_on':
+                    x, y = mouse_movement_area(coordinates_list[9], zone, screen_size)
+                    
+                    clocX = plocX + (x - plocX) / smooth_factor
+                    clocY = plocY + (y - plocY) / smooth_factor
+                    mouse_move(clocX, clocY)
+
+                    plocX, plocY = clocX, clocY
+                    # mouse_left_click(coordinates_list[8][1], coordinates_list[7][1])
+                    # mouse_right_click(coordinates_list[4][0], coordinates_list[3][0])
+
+
+                
+
+                # cv.putText(frame, f'COMMAND: {command}', (int(width*0.05), int(height*0.1)),
+                #            cv.FONT_HERSHEY_COMPLEX, 1, (22, 69, 22), 3, cv.LINE_AA)
 
             # Write to the dataset file (if mode == 1)
             logging_csv(class_id, mode, preprocessed)
