@@ -2,7 +2,7 @@ from model_architecture import model
 import pandas as pd
 import mediapipe as mp
 from utils import *
-
+from collections import deque
 
 # Camera resolution
 width = 1280//4
@@ -43,8 +43,14 @@ labels = pd.read_csv('data/label.csv', header=None).values.flatten().tolist()
 # mode normal (don't record data for training)
 mode = 0  
 
-while True:
+# confidence threshold(required to send most of the commands)
+conf_threshold = 0.8
 
+# command history
+history = deque([])
+
+while True:
+    # counter += 1
     key = cv.waitKey(1)
     if key == ord('q'):
         break
@@ -82,12 +88,9 @@ while True:
 
             # print(coordinates_list[8])
 
-            # check if hand (middle finger tip and wrist) is inside the detection zone for gesture recognition
+            # check if middle finger mcp is inside the detection zone for command execution
             if cv.pointPolygonTest(zone, coordinates_list[9], False) == 1: 
-                print('inside')
-
                 
-
                 # inference
                 # pred = predict(preprocessed, model)
                 # gesture = labels[pred]
@@ -101,15 +104,32 @@ while True:
                 # mouse
                 
                 if  gesture == 'mouse_on':
-                    x, y = mouse_movement_area(coordinates_list[9], zone, screen_size)
+                    conf, pred = predict(preprocessed, model)
+                    gesture = labels[pred]
                     
-                    clocX = plocX + (x - plocX) / smooth_factor
-                    clocY = plocY + (y - plocY) / smooth_factor
-                    mouse_move(clocX, clocY)
+                    history = track_history(history, gesture)
+                    print(history)
+                    if gesture == 'Forward' or gesture == 'Backward':
+                        x, y = mouse_movement_area(coordinates_list[9], zone, screen_size)
+                        
+                        clocX = plocX + (x - plocX) / smooth_factor
+                        clocY = plocY + (y - plocY) / smooth_factor
+                        pyautogui.moveTo(clocX, clocY)
 
-                    plocX, plocY = clocX, clocY
-                    # mouse_left_click(coordinates_list[8][1], coordinates_list[7][1])
-                    # mouse_right_click(coordinates_list[4][0], coordinates_list[3][0])
+                        plocX, plocY = clocX, clocY
+
+                    d1 = calc_distance(coordinates_list[4], coordinates_list[8])
+                    d2 = calc_distance(coordinates_list[4], coordinates_list[12])
+                    # print(d1, d2)
+                    # if counter % skip_every == 0:
+                    if conf >= conf_threshold:
+                        before_last = history[len(history) - 2]
+                        if gesture == 'Stop' and before_last != 'Stop':
+                            pyautogui.click()
+
+                        if gesture == 'Pause' and before_last != 'Pause':
+                            pyautogui.rightClick()
+
 
 
                 
@@ -125,6 +145,10 @@ while True:
 
     frame = draw_info(frame, mode, class_id)
     cv.imshow('', frame)
+    
+    
+    # if counter == 10:
+    #     counter = 0
 
 
 cap.release()

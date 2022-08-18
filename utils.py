@@ -4,6 +4,15 @@ import numpy as np
 import torch
 import pyautogui
 
+# track command history to avoid sending same command repeatedly
+# example: multiple subsequent clicks as long as the gesture is recognized
+def track_history(history, command, last_n = 3):
+    if len(history) < last_n:
+        history.append(command)
+    else:
+        history.popleft()
+        history.append(command)
+    return history
 
 # Running mode (normal or data logging)
 def select_mode(key, mode):
@@ -86,7 +95,10 @@ def predict(landmarks, model):
     model.eval()
     with torch.no_grad():
         landmarks = torch.tensor(landmarks.reshape(1, -1), dtype=torch.float)
-    return torch.argmax(model(landmarks), dim=1).item()
+        confidence = torch.exp(model(landmarks))
+    # return torch.argmax(model(landmarks), dim=1).item()
+    conf, pred = torch.max(confidence, dim=1)
+    return conf.item(), pred.item()
 
 
 # Draw detection zone
@@ -107,7 +119,6 @@ def detection_zone(frame, draw_zone = True):
 
 # Virtual mouse
 pyautogui.FAILSAFE = False
-
 def mouse_movement_area(coordinates, detection_zone, screen_size):
     """
     map detection zone to the screen size
@@ -128,6 +139,8 @@ def mouse_movement_area(coordinates, detection_zone, screen_size):
 def mouse_move(x, y):
         pyautogui.moveTo(x, y)
 
+def calc_distance(pt1, pt2):
+    return np.linalg.norm(np.array(pt1) - np.array(pt2))
 
 def mouse_left_click(index_finger_tip_y, index_finger_dip_y, time_after_click = 0):
     if (index_finger_tip_y >= index_finger_dip_y) and index_finger_dip_y > 0:
