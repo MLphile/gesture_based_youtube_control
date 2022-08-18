@@ -120,8 +120,7 @@ while True:
 
                     d1 = calc_distance(coordinates_list[4], coordinates_list[8])
                     d2 = calc_distance(coordinates_list[4], coordinates_list[12])
-                    # print(d1, d2)
-                    # if counter % skip_every == 0:
+                    
                     if conf >= conf_threshold:
                         before_last = history[len(history) - 2]
                         if gesture == 'Stop' and before_last != 'Stop':
@@ -145,10 +144,6 @@ while True:
 
     frame = draw_info(frame, mode, class_id)
     cv.imshow('', frame)
-    
-    
-    # if counter == 10:
-    #     counter = 0
 
 
 cap.release()
