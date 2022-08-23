@@ -8,6 +8,9 @@ __pycache__/
 # test file
 test_code.ipynb
 
+# dat files (heavy file;facial landmarks detector)
+*.dat
+
 # Distribution / packaging
 .Python
 build/
