@@ -102,11 +102,10 @@ def predict(landmarks, model):
 
 
 # Draw detection zone
-
 def detection_zone(frame, draw_zone = True):
     frame_height, frame_width = frame.shape[:2]
     zone_height, zone_width = frame_height // 2 , frame_width // 3
-    zone= np.array([(zone_width, 0), (zone_width*2, 0), (zone_width*2, zone_height), (zone_width, zone_height)])
+    zone = np.array([(zone_width, 0), (zone_width*2, 0), (zone_width*2, zone_height), (zone_width, zone_height)])
     
     if draw_zone:
         cv.rectangle(frame, (zone_width, 0), (zone_width*2, zone_height), (0, 255, 0), 2)
@@ -130,9 +129,6 @@ def mouse_movement_area(coordinates, detection_zone, screen_size):
     screen_width, screen_height = screen_size
     new_x = np.interp(x, (zone_width + offset_x, zone_width*2 - offset_x), (0, screen_width))
     new_y = np.interp(y, (offset_y, zone_height - offset_y), (0, screen_height))
-    # x = x * screen_width / frame_width
-    # y = y * screen_height / frame_height
-    
     return new_x, new_y
 
 
@@ -142,15 +138,29 @@ def mouse_move(x, y):
 def calc_distance(pt1, pt2):
     return np.linalg.norm(np.array(pt1) - np.array(pt2))
 
-def mouse_left_click(index_finger_tip_y, index_finger_dip_y, time_after_click = 0):
-    if (index_finger_tip_y >= index_finger_dip_y) and index_finger_dip_y > 0:
-        pyautogui.click()
-        print('left click')
+# def mouse_left_click(index_finger_tip_y, index_finger_dip_y, time_after_click = 0):
+#     if (index_finger_tip_y >= index_finger_dip_y) and index_finger_dip_y > 0:
+#         pyautogui.click()
+#         print('left click')
 
-def mouse_right_click(thump_tip_x, thump_ip_x):
-    if (thump_tip_x >= thump_ip_x):
-        # pyautogui.rightClick()
-        print('right click')
+# def mouse_right_click(thump_tip_x, thump_ip_x):
+#     if (thump_tip_x >= thump_ip_x):
+#         # pyautogui.rightClick()
+#         print('right click')
 
+
+def eye_aspect_ratio(eye):
+	# compute the euclidean distances between the two sets of
+	# vertical eye landmarks
+    A = calc_distance(eye[1], eye[5])
+    B = calc_distance(eye[2], eye[4])
+
+	# compute the euclidean distance between the horizontal
+	# eye landmark
+    C = calc_distance(eye[0], eye[3])
+
+	# compute the eye aspect ratio
+    ear = (A + B) / (2.0 * C)
+    return ear
 
 
