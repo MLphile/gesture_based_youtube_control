@@ -112,7 +112,10 @@ while True:
             # Conversion to relative coordinates and normalized coordinates
             preprocessed = pre_process_landmark(coordinates_list)
 
-            
+
+            # Write to the csv file "keypoint.csv"(if mode == 1)
+            logging_csv(class_id, mode, preprocessed)
+
 
             # check if middle finger mcp is inside the detection zone for command execution
             if cv.pointPolygonTest(zone, coordinates_list[9], False) == 1: 
@@ -160,8 +163,7 @@ while True:
                 # cv.putText(frame, f'COMMAND: {command}', (int(width*0.05), int(height*0.1)),
                 #            cv.FONT_HERSHEY_COMPLEX, 1, (22, 69, 22), 3, cv.LINE_AA)
 
-            # Write to the dataset file (if mode == 1)
-            logging_csv(class_id, mode, preprocessed)
+            
 
     
 
