@@ -1,4 +1,4 @@
-from model_architecture import model
+from models.model_architecture import model
 import pandas as pd
 import mediapipe as mp
 import dlib
@@ -39,10 +39,12 @@ hands = mp_hands.Hands(
 mp_drawing = mp.solutions.drawing_utils
 
 # Load model
-model.load_state_dict(torch.load('model.pth'))
+GESTURE_RECOGNIZER_PATH = 'models/model.pth'
+model.load_state_dict(torch.load(GESTURE_RECOGNIZER_PATH))
 
 # Load Label
-labels = pd.read_csv('data/label.csv', header=None).values.flatten().tolist()
+LABEL_PATH = 'data/label.csv'
+labels = pd.read_csv(LABEL_PATH, header=None).values.flatten().tolist()
 
 # mode normal (don't record data for training)
 mode = 0  
@@ -65,8 +67,9 @@ absence_counter = 0
 absence_counter_threshold = 10
 
 # Frontal face + face landmarks
+SHAPE_PREDICTOR_PATH = "models/shape_predictor_68_face_landmarks.dat"
 detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+predictor = dlib.shape_predictor(SHAPE_PREDICTOR_PATH)
 lStart, lEnd = face_utils.FACIAL_LANDMARKS_IDXS["left_eye"]
 rStart, rEnd = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]
 
@@ -117,132 +120,132 @@ while True:
             logging_csv(class_id, mode, preprocessed)
 
 
-            # check if middle finger mcp is inside the detection zone for command execution
-            if cv.pointPolygonTest(zone, coordinates_list[9], False) == 1: 
+    #         # check if middle finger mcp is inside the detection zone for command execution
+    #         if cv.pointPolygonTest(zone, coordinates_list[9], False) == 1: 
                 
-                # inference
-                # pred = predict(preprocessed, model)
-                # gesture = labels[pred]
+    #             # inference
+    #             # pred = predict(preprocessed, model)
+    #             # gesture = labels[pred]
 
-                # activate/deactivate mouse mode
-                gesture = 'mouse_on'
+    #             # activate/deactivate mouse mode
+    #             gesture = 'mouse_on'
                 
                 
-                # keyboard
+    #             # keyboard
 
-                # mouse
+    #             # mouse
                 
-                if  gesture == 'mouse_on':
-                    conf, pred = predict(preprocessed, model)
-                    gesture = labels[pred]
+    #             if  gesture == 'mouse_on':
+    #                 conf, pred = predict(preprocessed, model)
+    #                 gesture = labels[pred]
                     
                     
-                    if gesture == 'Forward' or gesture == 'Backward':
-                        x, y = mouse_movement_area(coordinates_list[9], zone, screen_size)
+    #                 if gesture == 'Forward' or gesture == 'Backward':
+    #                     x, y = mouse_movement_area(coordinates_list[9], zone, screen_size)
                         
-                        clocX = plocX + (x - plocX) / smooth_factor
-                        clocY = plocY + (y - plocY) / smooth_factor
-                        pyautogui.moveTo(clocX, clocY)
+    #                     clocX = plocX + (x - plocX) / smooth_factor
+    #                     clocY = plocY + (y - plocY) / smooth_factor
+    #                     pyautogui.moveTo(clocX, clocY)
 
-                        plocX, plocY = clocX, clocY
+    #                     plocX, plocY = clocX, clocY
 
-                    if conf >= conf_threshold:
-                        history = track_history(history, gesture)
-                        # print(history)
-                        before_last = history[len(history) - 2]
-                        if gesture == 'Stop' and before_last != 'Stop':
-                            pyautogui.click()
+    #                 if conf >= conf_threshold:
+    #                     history = track_history(history, gesture)
+    #                     # print(history)
+    #                     before_last = history[len(history) - 2]
+    #                     if gesture == 'Stop' and before_last != 'Stop':
+    #                         pyautogui.click()
 
-                        if gesture == 'Pause' and before_last != 'Pause':
-                            pyautogui.rightClick()
+    #                     if gesture == 'Pause' and before_last != 'Pause':
+    #                         pyautogui.rightClick()
 
 
 
                 
 
-                # cv.putText(frame, f'COMMAND: {command}', (int(width*0.05), int(height*0.1)),
-                #            cv.FONT_HERSHEY_COMPLEX, 1, (22, 69, 22), 3, cv.LINE_AA)
+    #             # cv.putText(frame, f'COMMAND: {command}', (int(width*0.05), int(height*0.1)),
+    #             #            cv.FONT_HERSHEY_COMPLEX, 1, (22, 69, 22), 3, cv.LINE_AA)
 
             
 
     
 
-    # FACE AND FACE LANDMARKS
-    # 1. Sleepness feature (based on eye aspect ratio)
-    # frame_rgb = imutils.resize(frame_rgb, width=450)
-    frame_gray = cv.cvtColor(frame_rgb, cv.COLOR_RGB2GRAY)
-    faces = detector(frame_gray)
-    for face in faces:
+    # # FACE AND FACE LANDMARKS
+    # # 1. Sleepness feature (based on eye aspect ratio)
+    # # frame_rgb = imutils.resize(frame_rgb, width=450)
+    # frame_gray = cv.cvtColor(frame_rgb, cv.COLOR_RGB2GRAY)
+    # faces = detector(frame_gray)
+    # for face in faces:
         
-        landmarks = predictor(frame_gray, face)
-        landmarks = face_utils.shape_to_np(landmarks)
+    #     landmarks = predictor(frame_gray, face)
+    #     landmarks = face_utils.shape_to_np(landmarks)
 
 
-        leftEye = landmarks[lStart:lEnd]
-        rightEye = landmarks[rStart:rEnd]
-        # print(leftEye)
+    #     leftEye = landmarks[lStart:lEnd]
+    #     rightEye = landmarks[rStart:rEnd]
+    #     # print(leftEye)
 
-        leftEAR = eye_aspect_ratio(leftEye)
-        rightEAR = eye_aspect_ratio(rightEye)
-		# average the eye aspect ratio together for both eyes
-        ear = (leftEAR + rightEAR) / 2.0
+    #     leftEAR = eye_aspect_ratio(leftEye)
+    #     rightEAR = eye_aspect_ratio(rightEye)
+	# 	# average the eye aspect ratio together for both eyes
+    #     ear = (leftEAR + rightEAR) / 2.0
         
-        # check if sleeping, then pause the video
-        if ear < ear_threshold:
-            sleep_counter += 1
-            # print(ear)
-            if sleep_counter > sleep_counter_thresh and is_sleeping == False:
-                pyautogui.press('space')
-                print('sleeping')
-                is_sleeping = True
+    #     # check if sleeping, then pause the video
+    #     if ear < ear_threshold:
+    #         sleep_counter += 1
+    #         # print(ear)
+    #         if sleep_counter > sleep_counter_thresh and is_sleeping == False:
+    #             pyautogui.press('space')
+    #             print('sleeping')
+    #             is_sleeping = True
 
 
-        else:
-            sleep_counter = 0
-            if is_sleeping:
-                pyautogui.press('space')
-                print('not sleeping')
+    #     else:
+    #         sleep_counter = 0
+    #         if is_sleeping:
+    #             pyautogui.press('space')
+    #             print('not sleeping')
         
-            is_sleeping = False
+    #         is_sleeping = False
 
 
 
 
 
-        leftEyeHull = cv.convexHull(leftEye)
-        rightEyeHull = cv.convexHull(rightEye)
-        cv.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
-        cv.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
+    #     leftEyeHull = cv.convexHull(leftEye)
+    #     rightEyeHull = cv.convexHull(rightEye)
+    #     cv.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
+    #     cv.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
 
-        cv.putText(frame, f'{ear:.2f}',(int(width*0.05), int(height*0.1)),
-                           cv.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 3, cv.LINE_AA)
+    #     cv.putText(frame, f'{ear:.2f}',(int(width*0.05), int(height*0.1)),
+    #                        cv.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 3, cv.LINE_AA)
 
     
-    # 2. Presence/absence feature based on face detection
-    results = face_detection.process(frame_rgb) 
-    # face detected
-    if results.detections:
-        absence_counter = 0
+    # # 2. Presence/absence feature based on face detection
+    # results = face_detection.process(frame_rgb) 
+    # # face detected
+    # if results.detections:
+    #     absence_counter = 0
 
-        if is_absent:
-            pyautogui.press('space')
+    #     if is_absent:
+    #         pyautogui.press('space')
         
-        is_absent = False
+    #     is_absent = False
 
-       # draw bounding box
-        for detection in results.detections:
-            bbox = detection.location_data.relative_bounding_box
-            frame_height, frame_width = frame.shape[:2]
-            x, y = int(bbox.xmin * frame_width), int(bbox.ymin * frame_height)
-            w, h = int(bbox.width * frame_width), int(bbox.height * frame_height)
-            cv.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 1)
+    #    # draw bounding box
+    #     for detection in results.detections:
+    #         bbox = detection.location_data.relative_bounding_box
+    #         frame_height, frame_width = frame.shape[:2]
+    #         x, y = int(bbox.xmin * frame_width), int(bbox.ymin * frame_height)
+    #         w, h = int(bbox.width * frame_width), int(bbox.height * frame_height)
+    #         cv.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 1)
     
-    else:
-        absence_counter += 1
-        if absence_counter > absence_counter_threshold and is_absent == False:
+    # else:
+    #     absence_counter += 1
+    #     if absence_counter > absence_counter_threshold and is_absent == False:
             
-            pyautogui.press('space')  
-            is_absent = True
+    #         pyautogui.press('space')  
+    #         is_absent = True
                     
 
     frame = draw_info(frame, mode, class_id)
