@@ -16,14 +16,24 @@ def track_history(history, command, last_n = 3):
 
 # Running mode (normal or data logging)
 def select_mode(key, mode):
-    class_id = -1
-    if 48 <= key <= 57:  # class_id
-        class_id = key - 48
     if key == ord('n'):  # normal mode
         mode = 0
     if key == ord('r'):  # record data
         mode = 1
-    return class_id, mode
+    return mode
+
+
+# ID associated to each hand gesture
+def get_class_id(key):
+    class_id = -1
+
+    if 48 <= key <= 57:  # numeric keys
+        class_id = key - 48
+    if key == 65: # capital A
+        class_id = 10
+    if key == 66: # capital B
+        class_id = 11 
+    return class_id
 
 
 # record landmarks
@@ -35,7 +45,6 @@ def logging_csv(class_id, mode, landmark_list):
         with open(csv_path, 'a', newline="") as f:
             writer = csv.writer(f)
             writer.writerow([class_id, *landmark_list])
-    return
 
 
 # Annotate frame
@@ -46,7 +55,7 @@ def draw_info(frame, mode, class_id):
                    cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 1, cv.LINE_AA)
 
         if class_id != -1:
-            cv.putText(frame, "NUM:" + str(class_id), (10, 110),
+            cv.putText(frame, "Class ID:" + str(class_id), (10, 110),
                        cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 1,
                        cv.LINE_AA)
 

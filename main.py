@@ -6,7 +6,8 @@ from imutils import face_utils
 from utils import *
 from collections import deque
 
-
+# Set to nornal mode (=> no recording of data)
+mode = 0
 
 # Camera resolution
 width = 1028//2
@@ -46,8 +47,6 @@ model.load_state_dict(torch.load(GESTURE_RECOGNIZER_PATH))
 LABEL_PATH = 'data/label.csv'
 labels = pd.read_csv(LABEL_PATH, header=None).values.flatten().tolist()
 
-# mode normal (don't record data for training)
-mode = 0  
 
 # confidence threshold(required to send most of the commands)
 conf_threshold = 0.8
@@ -83,8 +82,14 @@ while True:
     if key == ord('q'):
         break
 
-    # reset mode and class id
-    class_id, mode = select_mode(key, mode)
+    
+    # choose mode (normal or recording)
+    mode = select_mode(key, mode=mode)
+
+    # class id for recording
+    class_id = get_class_id(key)
+
+    print(key, mode, class_id)
 
     # read camera
     has_frame, frame = cap.read()
@@ -117,7 +122,7 @@ while True:
 
 
             # Write to the csv file "keypoint.csv"(if mode == 1)
-            logging_csv(class_id, mode, preprocessed)
+            # logging_csv(class_id, mode, preprocessed)
 
 
     #         # check if middle finger mcp is inside the detection zone for command execution
