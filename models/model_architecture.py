@@ -1,10 +1,9 @@
 import torch.nn as nn
 import torch.nn.functional as F
-import os
 
 n_features = 42
 hidden_size = [32, 16]
-n_classes = 8
+n_classes = 12
 
 
 class MLP(nn.Module):
@@ -17,7 +16,7 @@ class MLP(nn.Module):
     def forward(self, x):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        return F.log_softmax(self.output(x), dim=1)
+        return F.softmax(self.output(x), dim=1)
 
 
 model = MLP(n_features, n_classes, hidden_size)

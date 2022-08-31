@@ -40,7 +40,7 @@ def get_class_id(key):
 def logging_csv(class_id, mode, landmark_list):
     if mode == 0:
         pass
-    if mode == 1 and (0 <= class_id <= 9):
+    if mode == 1 and (0 <= class_id <= 11):
         csv_path = 'data/keypoint.csv'
         with open(csv_path, 'a', newline="") as f:
             writer = csv.writer(f)
@@ -93,7 +93,6 @@ def pre_process_landmark(landmark_list):
 
     normalized = flattened/max_value
 
-    # return normalized
     return normalized
 
 
@@ -104,7 +103,8 @@ def predict(landmarks, model):
     model.eval()
     with torch.no_grad():
         landmarks = torch.tensor(landmarks.reshape(1, -1), dtype=torch.float)
-        confidence = torch.exp(model(landmarks))
+        # confidence = torch.exp(model(landmarks))
+        confidence = model(landmarks)
     # return torch.argmax(model(landmarks), dim=1).item()
     conf, pred = torch.max(confidence, dim=1)
     return conf.item(), pred.item()

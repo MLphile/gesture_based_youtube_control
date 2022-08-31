@@ -89,8 +89,6 @@ while True:
     # class id for recording
     class_id = get_class_id(key)
 
-    print(key, mode, class_id)
-
     # read camera
     has_frame, frame = cap.read()
     if not has_frame:
@@ -101,7 +99,7 @@ while True:
     frame_rgb = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
     
     # Detection zone
-    zone = detection_zone(frame)
+    # zone = detection_zone(frame)
 
     
 
@@ -122,8 +120,16 @@ while True:
 
 
             # Write to the csv file "keypoint.csv"(if mode == 1)
-            # logging_csv(class_id, mode, preprocessed)
+            logging_csv(class_id, mode, preprocessed)
 
+            # inference
+            conf, pred = predict(preprocessed, model)
+            gesture = labels[pred]
+            # if conf >= 0.9:
+            cv.putText(frame, f'Gesture: {gesture} | Conf: {conf: .2f}', (int(width*0.05), int(height*0.1)),
+                           cv.FONT_HERSHEY_COMPLEX, 1, (22, 69, 22), 2, cv.LINE_AA)
+
+            
 
     #         # check if middle finger mcp is inside the detection zone for command execution
     #         if cv.pointPolygonTest(zone, coordinates_list[9], False) == 1: 
