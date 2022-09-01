@@ -4,7 +4,6 @@ import mediapipe as mp
 import dlib
 from imutils import face_utils
 from utils import *
-from collections import deque
 
 # Set to nornal mode (=> no recording of data)
 mode = 0
@@ -19,7 +18,8 @@ cap = cv.VideoCapture(0)
 cap.set(cv.CAP_PROP_FRAME_WIDTH, width)
 cap.set(cv.CAP_PROP_FRAME_HEIGHT, height)
 
-
+# important keypoints
+to_save = [keypoint for keypoint in range(0, 21, 4)]
 # Screen size
 screen_size = pyautogui.size()
 
@@ -114,20 +114,40 @@ while True:
 
             # get landmarks coordinates
             coordinates_list = calc_landmark_coordinates(frame, hand_landmarks)
+            important_points = [coordinates_list[i] for i in to_save]
+
 
             # Conversion to relative coordinates and normalized coordinates
             preprocessed = pre_process_landmark(coordinates_list)
-
+            preprocessed2 = pre_process_landmark(important_points)
+            
+            # compute the needed distances to add as features
+            d0 = calc_distance(coordinates_list[0], coordinates_list[5])
+            pts_for_distances = [coordinates_list[i] for i in [4, 8, 12]]
+            distances = normalize_distances(d0, get_all_distances(pts_for_distances)) 
+            
 
             # Write to the csv file "keypoint.csv"(if mode == 1)
-            logging_csv(class_id, mode, preprocessed)
+            # logging_csv(class_id, mode, preprocessed)
+            features = np.concatenate([preprocessed2, distances])
+            logging_csv(class_id, mode, features)
 
             # inference
-            conf, pred = predict(preprocessed, model)
+            conf, pred = predict(features, model)
             gesture = labels[pred]
-            # if conf >= 0.9:
-            cv.putText(frame, f'Gesture: {gesture} | Conf: {conf: .2f}', (int(width*0.05), int(height*0.1)),
-                           cv.FONT_HERSHEY_COMPLEX, 1, (22, 69, 22), 2, cv.LINE_AA)
+
+
+            
+            # Check output
+            for pt in pts_for_distances:
+                cv.circle(frame, pt, 5, (0, 255, 0), -1)
+           
+            cv.putText(frame, f'{gesture} | {conf: .2f}', (int(width*0.05), int(height*0.1)),
+                        cv.FONT_HERSHEY_COMPLEX, 1, (22, 69, 22), 2, cv.LINE_AA)
+
+                
+                       
+                
 
             
 

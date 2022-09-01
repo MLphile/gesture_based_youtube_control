@@ -3,6 +3,7 @@ import cv2 as cv
 import numpy as np
 import torch
 import pyautogui
+from collections import deque
 
 # track command history to avoid sending same command repeatedly
 # example: multiple subsequent clicks as long as the gesture is recognized
@@ -37,14 +38,14 @@ def get_class_id(key):
 
 
 # record landmarks
-def logging_csv(class_id, mode, landmark_list):
+def logging_csv(class_id, mode, features):
     if mode == 0:
         pass
     if mode == 1 and (0 <= class_id <= 11):
         csv_path = 'data/keypoint.csv'
         with open(csv_path, 'a', newline="") as f:
             writer = csv.writer(f)
-            writer.writerow([class_id, *landmark_list])
+            writer.writerow([class_id, *features])
 
 
 # Annotate frame
@@ -88,11 +89,11 @@ def pre_process_landmark(landmark_list):
     # Convert back to 1D array
     flattened = relatives.flatten()
 
-    # Normalize between (-1, 1)
+    # Normalize between (-1, 1), exclude wrist coordinates(always 0)
     max_value = np.abs(flattened).max()
 
-    normalized = flattened/max_value
-
+    normalized = flattened[2:]/max_value
+    
     return normalized
 
 
@@ -145,7 +146,25 @@ def mouse_move(x, y):
         pyautogui.moveTo(x, y)
 
 def calc_distance(pt1, pt2):
+    # compute euclidian distance between two points pt1 and pt2
     return np.linalg.norm(np.array(pt1) - np.array(pt2))
+
+
+def get_all_distances(pts_list):
+
+    # Compute all distances between pts in a given list (pts_list)
+    pts = deque(pts_list)
+    distances = deque()
+    while len(pts) > 1:
+        pt1 = pts.popleft()
+        distances.extend( [calc_distance(pt1, pt2) for pt2 in pts] )
+    
+    return distances
+
+def normalize_distances(d0, distances_list):
+    # normalize distances in distances_list by d0
+    return np.array(distances_list) / d0
+
 
 # def mouse_left_click(index_finger_tip_y, index_finger_dip_y, time_after_click = 0):
 #     if (index_finger_tip_y >= index_finger_dip_y) and index_finger_dip_y > 0:
