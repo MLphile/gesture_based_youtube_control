@@ -100,7 +100,7 @@ while True:
     frame_rgb = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
     
     # Detection and mouse zones
-    det_zone, m_zone = detection_zone(frame)
+    det_zone, m_zone = det_mouse_zones(frame)
 
     
 
@@ -149,32 +149,32 @@ while True:
             # check if middle finger mcp is inside the detection zone and prediction confidence is good enough
             if cv.pointPolygonTest(det_zone, coordinates_list[9], False) == 1 and conf >= conf_threshold: 
 
-            #     # track command history
-            #     history = track_history(history, gesture)
-            #     print(history)
-            #     if len(history) >= 2:
-            #         before_last = history[len(history) - 2]
-            #     else:
-            #         before_last = history[0]
+                # track command history
+                history = track_history(history, gesture)
+                # print(history)
+                if len(history) >= 2:
+                    before_last = history[len(history) - 2]
+                else:
+                    before_last = history[0]
 
-            # ############### Mouse ##################
-            #     if gesture == 'Move_mouse':
-            #         x, y = mouse_movement_area(coordinates_list[9], zone, screen_size)
+            ############### Mouse ##################
+                if gesture == 'Move_mouse':
+                    x, y = mouse_zone_to_screen(coordinates_list[9], m_zone, screen_size)
                     
-            #         clocX = plocX + (x - plocX) / smooth_factor
-            #         clocY = plocY + (y - plocY) / smooth_factor
-            #         pyautogui.moveTo(clocX, clocY)
+                    clocX = plocX + (x - plocX) / smooth_factor
+                    clocY = plocY + (y - plocY) / smooth_factor
+                    pyautogui.moveTo(clocX, clocY)
 
-            #         plocX, plocY = clocX, clocY
+                    plocX, plocY = clocX, clocY
 
-            #     if gesture == 'Right_click' and before_last != 'Right_click':
-            #         # pyautogui.rightClick()
-            #         print('right')
+                if gesture == 'Right_click' and before_last != 'Right_click':
+                    pyautogui.rightClick()
+                    print('right')
 
 
-            #     if gesture == 'Left_click' and before_last != 'Left_click':
-            #         # pyautogui.rightClick()
-            #         print('left')     
+                if gesture == 'Left_click' and before_last != 'Left_click':
+                    pyautogui.click()
+                    print('left')     
 
 
 

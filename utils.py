@@ -118,7 +118,7 @@ def predict(landmarks, model):
 # Compute and draw the detection zone in which hand gestures
 # are translated to commands.
 # Also determine the area in which mouse movements are possible
-def detection_mouse_zone(frame, draw_det_zone = True, draw_mouse_zone = True, 
+def det_mouse_zones(frame, draw_det_zone = True, draw_mouse_zone = True, 
                     horizontal_shift = 0.05, vertical_shift = 0.10, mouse_shift = 10):
     # Detection zone
     frame_height, frame_width = frame.shape[:2]
@@ -143,18 +143,17 @@ def detection_mouse_zone(frame, draw_det_zone = True, draw_mouse_zone = True,
 
 
 
-# Virtual mouse
-def mouse_movement_area(coordinates, detection_zone, screen_size):
+
+def mouse_zone_to_screen(coordinates, mouse_zone, screen_size):
     """
-    map detection zone to the screen size
+    Convert coordinates in such a way that the mouse_zone maps to 
+    the screen_size
     """
     x, y = coordinates
-    zone_width, zone_height = detection_zone[0][0], detection_zone[2][1]
-    offset_x , offset_y = zone_width // 10, zone_height // 10
-
     screen_width, screen_height = screen_size
-    new_x = np.interp(x, (zone_width + offset_x, zone_width*2 - offset_x), (0, screen_width))
-    new_y = np.interp(y, (offset_y, zone_height - offset_y), (0, screen_height))
+    
+    new_x = np.interp(x, (mouse_zone[0][0], mouse_zone[2][0]), (0, screen_width))
+    new_y = np.interp(y, (mouse_zone[0][1], mouse_zone[2][1]), (0, screen_height))
     return new_x, new_y
 
 
