@@ -55,7 +55,8 @@ conf_threshold = 0.8
 # command history
 history = deque([])
 
-
+# general counter (for volum up/down; forward/backward)
+gen_counter = 0
 # Face detector mediapipe
 mp_face_detection = mp.solutions.face_detection
 
@@ -175,6 +176,39 @@ while True:
                 if gesture == 'Left_click' and before_last != 'Left_click':
                     pyautogui.click()
                     print('left')     
+
+
+            ############### Main gestures ################## 
+                if gesture == 'Play_Pause' and before_last != 'Play_Pause':
+                    pyautogui.press('space')
+
+                if gesture == 'Vol_up_ytb' and before_last != 'Vol_up_ytb':
+                    pyautogui.press('up')
+
+                if gesture == 'Vol_down_ytb' and before_last != 'Vol_down_ytb':
+                    pyautogui.press('down')
+                
+                if gesture == 'Vol_up_gen':
+                    pyautogui.press('volumeup')
+
+                if gesture == 'Vol_down_gen':
+                    pyautogui.press('volumedown')
+
+                if gesture == 'Forward':
+                    gen_counter += 1
+                    if gen_counter % 10 == 0:
+                        pyautogui.press('right')
+                
+                if gesture == 'Backward':
+                    gen_counter += 1
+                    if gen_counter % 10 == 0:
+                        pyautogui.press('left')
+                
+                if gesture == 'Screen' and before_last != 'Screen':
+                    pyautogui.press('f')
+
+                if gesture == 'Nothing':
+                    gen_counter = 0
 
 
 
