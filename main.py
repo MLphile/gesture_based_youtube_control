@@ -18,8 +18,9 @@ cap = cv.VideoCapture(0)
 cap.set(cv.CAP_PROP_FRAME_WIDTH, width)
 cap.set(cv.CAP_PROP_FRAME_HEIGHT, height)
 
-# important keypoints
+# important keypoints (wrist + tips)
 to_save = [keypoint for keypoint in range(0, 21, 4)]
+
 # Screen size
 screen_size = pyautogui.size()
 
@@ -48,7 +49,7 @@ LABEL_PATH = 'data/label.csv'
 labels = pd.read_csv(LABEL_PATH, header=None).values.flatten().tolist()
 
 
-# confidence threshold(required to send most of the commands)
+# confidence threshold(required to translate gestures into commands)
 conf_threshold = 0.8
 
 # command history
@@ -98,8 +99,8 @@ while True:
     frame = cv.flip(frame, 1)
     frame_rgb = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
     
-    # Detection zone
-    # zone = detection_zone(frame)
+    # Detection and mouse zones
+    det_zone, m_zone = detection_zone(frame)
 
     
 
@@ -118,10 +119,9 @@ while True:
 
 
             # Conversion to relative coordinates and normalized coordinates
-            preprocessed = pre_process_landmark(coordinates_list)
-            preprocessed2 = pre_process_landmark(important_points)
+            preprocessed = pre_process_landmark(important_points)
             
-            # compute the needed distances to add as features
+            # compute the needed distances to add as to coordinates features
             d0 = calc_distance(coordinates_list[0], coordinates_list[5])
             pts_for_distances = [coordinates_list[i] for i in [4, 8, 12]]
             distances = normalize_distances(d0, get_all_distances(pts_for_distances)) 
@@ -129,7 +129,7 @@ while True:
 
             # Write to the csv file "keypoint.csv"(if mode == 1)
             # logging_csv(class_id, mode, preprocessed)
-            features = np.concatenate([preprocessed2, distances])
+            features = np.concatenate([preprocessed, distances])
             logging_csv(class_id, mode, features)
 
             # inference
@@ -138,61 +138,51 @@ while True:
 
 
 
-            if conf >= 0.9:
-                cv.putText(frame, f'{gesture} | {conf: .2f}', (int(width*0.05), int(height*0.1)),
-                    cv.FONT_HERSHEY_COMPLEX, 1, (255, 0, 255), 2, cv.LINE_AA)
+            # if conf >= conf_threshold:
+            #     cv.putText(frame, f'{gesture} | {conf: .2f}', (int(width*0.05), int(height*0.1)),
+            #         cv.FONT_HERSHEY_COMPLEX, 1, (255, 0, 255), 2, cv.LINE_AA)
 
                 
-                       
+######################### Youtube player control ###########################################################                       
                 
 
-            
+            # check if middle finger mcp is inside the detection zone and prediction confidence is good enough
+            if cv.pointPolygonTest(det_zone, coordinates_list[9], False) == 1 and conf >= conf_threshold: 
 
-    #         # check if middle finger mcp is inside the detection zone for command execution
-    #         if cv.pointPolygonTest(zone, coordinates_list[9], False) == 1: 
-                
-    #             # inference
-    #             # pred = predict(preprocessed, model)
-    #             # gesture = labels[pred]
+            #     # track command history
+            #     history = track_history(history, gesture)
+            #     print(history)
+            #     if len(history) >= 2:
+            #         before_last = history[len(history) - 2]
+            #     else:
+            #         before_last = history[0]
 
-    #             # activate/deactivate mouse mode
-    #             gesture = 'mouse_on'
-                
-                
-    #             # keyboard
-
-    #             # mouse
-                
-    #             if  gesture == 'mouse_on':
-    #                 conf, pred = predict(preprocessed, model)
-    #                 gesture = labels[pred]
+            # ############### Mouse ##################
+            #     if gesture == 'Move_mouse':
+            #         x, y = mouse_movement_area(coordinates_list[9], zone, screen_size)
                     
-                    
-    #                 if gesture == 'Forward' or gesture == 'Backward':
-    #                     x, y = mouse_movement_area(coordinates_list[9], zone, screen_size)
-                        
-    #                     clocX = plocX + (x - plocX) / smooth_factor
-    #                     clocY = plocY + (y - plocY) / smooth_factor
-    #                     pyautogui.moveTo(clocX, clocY)
+            #         clocX = plocX + (x - plocX) / smooth_factor
+            #         clocY = plocY + (y - plocY) / smooth_factor
+            #         pyautogui.moveTo(clocX, clocY)
 
-    #                     plocX, plocY = clocX, clocY
+            #         plocX, plocY = clocX, clocY
 
-    #                 if conf >= conf_threshold:
-    #                     history = track_history(history, gesture)
-    #                     # print(history)
-    #                     before_last = history[len(history) - 2]
-    #                     if gesture == 'Stop' and before_last != 'Stop':
-    #                         pyautogui.click()
+            #     if gesture == 'Right_click' and before_last != 'Right_click':
+            #         # pyautogui.rightClick()
+            #         print('right')
 
-    #                     if gesture == 'Pause' and before_last != 'Pause':
-    #                         pyautogui.rightClick()
+
+            #     if gesture == 'Left_click' and before_last != 'Left_click':
+            #         # pyautogui.rightClick()
+            #         print('left')     
 
 
 
                 
 
-    #             # cv.putText(frame, f'COMMAND: {command}', (int(width*0.05), int(height*0.1)),
-    #             #            cv.FONT_HERSHEY_COMPLEX, 1, (22, 69, 22), 3, cv.LINE_AA)
+
+                cv.putText(frame, f'{gesture} | {conf: .2f}', (int(width*0.05), int(height*0.07)),
+                    cv.FONT_HERSHEY_COMPLEX, 0.8, (255, 0, 255), 1, cv.LINE_AA)
 
             
 
