@@ -2,8 +2,10 @@ import csv
 import cv2 as cv
 import numpy as np
 import torch
-import pyautogui
 from collections import deque
+import pyautogui
+pyautogui.FAILSAFE = False
+
 
 # track command history to avoid sending same command repeatedly
 # example: multiple subsequent clicks as long as the gesture is recognized
@@ -113,23 +115,35 @@ def predict(landmarks, model):
     return conf.item(), pred.item()
 
 
-# Draw detection zone
-def detection_zone(frame, draw_zone = True):
+# Compute and draw the detection zone in which hand gestures
+# are translated to commands.
+# Also determine the area in which mouse movements are possible
+def detection_mouse_zone(frame, draw_det_zone = True, draw_mouse_zone = True, 
+                    horizontal_shift = 0.05, vertical_shift = 0.10, mouse_shift = 10):
+    # Detection zone
     frame_height, frame_width = frame.shape[:2]
-    zone_height, zone_width = frame_height // 2 , frame_width // 3
-    zone = np.array([(zone_width, 0), (zone_width*2, 0), (zone_width*2, zone_height), (zone_width, zone_height)])
+    det_zone_height, det_zone_width = frame_height // 2 , frame_width // 3
+    xd, yd = int(horizontal_shift*frame_width) , int(vertical_shift*frame_height)
+    det_zone = np.array([(xd, yd), (xd + det_zone_width, yd), (xd + det_zone_width, yd + det_zone_height), 
+                    (xd, yd + det_zone_height)])
     
-    if draw_zone:
-        cv.rectangle(frame, (zone_width, 0), (zone_width*2, zone_height), (0, 255, 0), 2)
+    if draw_det_zone:
+        cv.rectangle(frame, (xd, yd), (xd + det_zone_width, yd + det_zone_height), (255, 0, 255), 3)
 
-    return zone
+    # Mouse zone (inside detection zone)
+    m_zone = np.array([(xd + mouse_shift, yd + mouse_shift), (xd + det_zone_width - mouse_shift, yd + mouse_shift), 
+                        (xd + det_zone_width - mouse_shift, yd + det_zone_height - mouse_shift), 
+                        (xd + mouse_shift, yd + det_zone_height - mouse_shift)])
 
-    
+    if draw_mouse_zone:
+        cv.rectangle(frame, (xd + mouse_shift, yd + mouse_shift), (xd + det_zone_width - mouse_shift, yd + det_zone_height - mouse_shift), 
+                        (0, 255, 0), 2)
+ 
+    return det_zone, m_zone
 
 
 
 # Virtual mouse
-pyautogui.FAILSAFE = False
 def mouse_movement_area(coordinates, detection_zone, screen_size):
     """
     map detection zone to the screen size
