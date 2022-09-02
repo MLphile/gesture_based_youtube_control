@@ -170,29 +170,31 @@ while True:
 
                 if gesture == 'Right_click' and before_last != 'Right_click':
                     pyautogui.rightClick()
-                    print('right')
 
 
                 if gesture == 'Left_click' and before_last != 'Left_click':
-                    pyautogui.click()
-                    print('left')     
+                    pyautogui.click()    
 
 
             ############### Main gestures ################## 
                 if gesture == 'Play_Pause' and before_last != 'Play_Pause':
                     pyautogui.press('space')
-
-                if gesture == 'Vol_up_ytb' and before_last != 'Vol_up_ytb':
-                    pyautogui.press('up')
-
-                if gesture == 'Vol_down_ytb' and before_last != 'Vol_down_ytb':
-                    pyautogui.press('down')
                 
                 if gesture == 'Vol_up_gen':
                     pyautogui.press('volumeup')
 
                 if gesture == 'Vol_down_gen':
                     pyautogui.press('volumedown')
+
+                if gesture == 'Vol_up_ytb':
+                    gen_counter += 1
+                    if gen_counter % 10 == 0:
+                        pyautogui.press('up')
+
+                if gesture == 'Vol_down_ytb':
+                    gen_counter += 1
+                    if gen_counter % 10 == 0:
+                        pyautogui.press('down')
 
                 if gesture == 'Forward':
                     gen_counter += 1
