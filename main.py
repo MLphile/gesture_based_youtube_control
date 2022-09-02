@@ -137,13 +137,10 @@ while True:
             gesture = labels[pred]
 
 
-            
-            # Check output
-            for pt in pts_for_distances:
-                cv.circle(frame, pt, 5, (0, 255, 0), -1)
-           
-            cv.putText(frame, f'{gesture} | {conf: .2f}', (int(width*0.05), int(height*0.1)),
-                        cv.FONT_HERSHEY_COMPLEX, 1, (22, 69, 22), 2, cv.LINE_AA)
+
+            if conf >= 0.9:
+                cv.putText(frame, f'{gesture} | {conf: .2f}', (int(width*0.05), int(height*0.1)),
+                    cv.FONT_HERSHEY_COMPLEX, 1, (255, 0, 255), 2, cv.LINE_AA)
 
                 
                        

@@ -34,6 +34,8 @@ def get_class_id(key):
         class_id = 10
     if key == 66: # capital B
         class_id = 11 
+    if key == 67: # capital C
+        class_id = 12
     return class_id
 
 
@@ -41,7 +43,7 @@ def get_class_id(key):
 def logging_csv(class_id, mode, features):
     if mode == 0:
         pass
-    if mode == 1 and (0 <= class_id <= 11):
+    if mode == 1 and (0 <= class_id <= 12):
         csv_path = 'data/keypoint.csv'
         with open(csv_path, 'a', newline="") as f:
             writer = csv.writer(f)

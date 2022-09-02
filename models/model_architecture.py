@@ -3,7 +3,7 @@ import torch.nn.functional as F
 
 n_features = 13
 hidden_size = [32, 16]
-n_classes = 12
+n_classes = 13
 
 class MLP(nn.Module):
     def __init__(self, n_features, n_classes, hidden_size):
