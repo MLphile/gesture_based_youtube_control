@@ -18,6 +18,13 @@ cap = cv.VideoCapture(0)
 cap.set(cv.CAP_PROP_FRAME_WIDTH, width)
 cap.set(cv.CAP_PROP_FRAME_HEIGHT, height)
 
+# Icon to indicate saved links
+img_path = 'images/floppy-icon.png'
+save_icon = cv.resize(cv.imread(img_path), (50, 50), interpolation=cv.INTER_AREA)
+
+# Nombre of saved links
+counter_saved = 0
+
 # important keypoints (wrist + tips)
 to_save = [keypoint for keypoint in range(0, 21, 4)]
 
@@ -50,13 +57,14 @@ labels = pd.read_csv(LABEL_PATH, header=None).values.flatten().tolist()
 
 
 # confidence threshold(required to translate gestures into commands)
-conf_threshold = 0.8
+conf_threshold = 0.9
 
 # command history
 history = deque([])
 
 # general counter (for volum up/down; forward/backward)
 gen_counter = 0
+
 # Face detector mediapipe
 mp_face_detection = mp.solutions.face_detection
 
@@ -99,10 +107,12 @@ while True:
     # horizontal flip and color conversion for mediapipe
     frame = cv.flip(frame, 1)
     frame_rgb = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
-    
+
     # Detection and mouse zones
     det_zone, m_zone = det_mouse_zones(frame)
 
+    # Overlay Icon image and show how many saved links
+    show_save_info(frame, save_icon, nb_saved = counter_saved)
     
 
     # HAND DETECTION
@@ -115,7 +125,7 @@ while True:
                 frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
             # get landmarks coordinates
-            coordinates_list = calc_landmark_coordinates(frame, hand_landmarks)
+            coordinates_list = calc_landmark_coordinates(frame_rgb, hand_landmarks)
             important_points = [coordinates_list[i] for i in to_save]
 
 
@@ -208,17 +218,28 @@ while True:
                 
                 if gesture == 'Screen' and before_last != 'Screen':
                     pyautogui.press('f')
+                
+                if gesture == 'Save' and before_last != 'Save':
+                    # replace before_last condition by add condition 
+                    # to check if link is already saved(i.e in database)
+                    # count only if link is not in database
+                    # instead of using a counter, count the number of items
+                    # in the database
+                    counter_saved += 1
 
                 if gesture == 'Nothing':
                     gen_counter = 0
 
 
 
+
                 
 
-
+                
                 cv.putText(frame, f'{gesture} | {conf: .2f}', (int(width*0.05), int(height*0.07)),
-                    cv.FONT_HERSHEY_COMPLEX, 0.8, (255, 0, 255), 1, cv.LINE_AA)
+                    cv.FONT_HERSHEY_COMPLEX, 0.8, (0, 0, 255), 1, cv.LINE_AA)
+
+                
 
             
 

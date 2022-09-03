@@ -67,6 +67,7 @@ def draw_info(frame, mode, class_id):
     return frame
 
 
+# Extract x, y coordinates of the landmarks
 def calc_landmark_coordinates(frame, landmarks):
     frame_height, frame_width = frame.shape[:2]
 
@@ -102,7 +103,6 @@ def pre_process_landmark(landmark_list):
 
 
 # prediction
-
 def predict(landmarks, model):
 
     model.eval()
@@ -157,8 +157,6 @@ def mouse_zone_to_screen(coordinates, mouse_zone, screen_size):
     return new_x, new_y
 
 
-def mouse_move(x, y):
-        pyautogui.moveTo(x, y)
 
 def calc_distance(pt1, pt2):
     # compute euclidian distance between two points pt1 and pt2
@@ -181,16 +179,19 @@ def normalize_distances(d0, distances_list):
     return np.array(distances_list) / d0
 
 
-# def mouse_left_click(index_finger_tip_y, index_finger_dip_y, time_after_click = 0):
-#     if (index_finger_tip_y >= index_finger_dip_y) and index_finger_dip_y > 0:
-#         pyautogui.click()
-#         print('left click')
+def show_save_info(frame, save_icon, nb_saved , vertical_shift = 40, horintal_shift = 150):
+    frame_w = frame.shape[1]
+    icon_h, icon_w = save_icon.shape[:2]
 
-# def mouse_right_click(thump_tip_x, thump_ip_x):
-#     if (thump_tip_x >= thump_ip_x):
-#         # pyautogui.rightClick()
-#         print('right click')
+    # Overlay icon image on frame
+    frame[vertical_shift:vertical_shift + icon_h,
+            frame_w - horintal_shift:frame_w - horintal_shift + icon_w] = save_icon
 
+    # Show the number of links saved
+    text_y = vertical_shift + icon_h//2
+    text_x = frame_w - horintal_shift + icon_w + 10
+    cv.putText(frame, str(nb_saved), (text_x, text_y), cv.FONT_HERSHEY_SIMPLEX, 
+                1 , (255, 0, 0), 2, cv.LINE_AA)
 
 def eye_aspect_ratio(eye):
 	# compute the euclidean distances between the two sets of
