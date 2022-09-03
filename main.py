@@ -73,7 +73,7 @@ face_detection = mp_face_detection.FaceDetection(
    
 is_absent = None
 absence_counter = 0
-absence_counter_threshold = 10
+absence_counter_threshold = 20
 
 # Frontal face + face landmarks
 SHAPE_PREDICTOR_PATH = "models/shape_predictor_68_face_landmarks.dat"
@@ -85,8 +85,9 @@ rStart, rEnd = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]
 
 is_sleeping = None
 sleep_counter = 0
-sleep_counter_thresh = 30
-ear_threshold = 0.26    
+sleep_counter_thresh = 20
+ear_threshold = 0.21 
+ear_history = deque([])     
 while True:
     key = cv.waitKey(1)
     if key == ord('q'):
@@ -115,7 +116,8 @@ while True:
     show_save_info(frame, save_icon, nb_saved = counter_saved)
     
 
-    # HAND DETECTION
+######################### GESTURE DETECTION ###########################################################
+ 
     results = hands.process(frame_rgb)
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
@@ -154,9 +156,8 @@ while True:
             #         cv.FONT_HERSHEY_COMPLEX, 1, (255, 0, 255), 2, cv.LINE_AA)
 
                 
-######################### Youtube player control ###########################################################                       
+######################### YOUTUBE PLAYER CONTROL ###########################################################                       
                 
-
             # check if middle finger mcp is inside the detection zone and prediction confidence is good enough
             if cv.pointPolygonTest(det_zone, coordinates_list[9], False) == 1 and conf >= conf_threshold: 
 
@@ -172,15 +173,14 @@ while True:
                 if gesture == 'Move_mouse':
                     x, y = mouse_zone_to_screen(coordinates_list[9], m_zone, screen_size)
                     
+                    # smoothe mouse movements
                     clocX = plocX + (x - plocX) / smooth_factor
                     clocY = plocY + (y - plocY) / smooth_factor
                     pyautogui.moveTo(clocX, clocY)
-
                     plocX, plocY = clocX, clocY
 
                 if gesture == 'Right_click' and before_last != 'Right_click':
                     pyautogui.rightClick()
-
 
                 if gesture == 'Left_click' and before_last != 'Left_click':
                     pyautogui.click()    
@@ -228,102 +228,98 @@ while True:
                     counter_saved += 1
 
                 if gesture == 'Nothing':
-                    gen_counter = 0
+                    gen_counter = 0 
 
 
 
 
                 
-
                 
                 cv.putText(frame, f'{gesture} | {conf: .2f}', (int(width*0.05), int(height*0.07)),
                     cv.FONT_HERSHEY_COMPLEX, 0.8, (0, 0, 255), 1, cv.LINE_AA)
 
                 
 
-            
-
     
+######################### SLEEPNESS DETECTION ########################################################### 
 
-    # # FACE AND FACE LANDMARKS
-    # # 1. Sleepness feature (based on eye aspect ratio)
-    # # frame_rgb = imutils.resize(frame_rgb, width=450)
-    # frame_gray = cv.cvtColor(frame_rgb, cv.COLOR_RGB2GRAY)
-    # faces = detector(frame_gray)
-    # for face in faces:
-        
-    #     landmarks = predictor(frame_gray, face)
-    #     landmarks = face_utils.shape_to_np(landmarks)
-
-
-    #     leftEye = landmarks[lStart:lEnd]
-    #     rightEye = landmarks[rStart:rEnd]
-    #     # print(leftEye)
-
-    #     leftEAR = eye_aspect_ratio(leftEye)
-    #     rightEAR = eye_aspect_ratio(rightEye)
-	# 	# average the eye aspect ratio together for both eyes
-    #     ear = (leftEAR + rightEAR) / 2.0
-        
-    #     # check if sleeping, then pause the video
-    #     if ear < ear_threshold:
-    #         sleep_counter += 1
-    #         # print(ear)
-    #         if sleep_counter > sleep_counter_thresh and is_sleeping == False:
-    #             pyautogui.press('space')
-    #             print('sleeping')
-    #             is_sleeping = True
-
-
-    #     else:
-    #         sleep_counter = 0
-    #         if is_sleeping:
-    #             pyautogui.press('space')
-    #             print('not sleeping')
-        
-    #         is_sleeping = False
-
-
-
-
-
-    #     leftEyeHull = cv.convexHull(leftEye)
-    #     rightEyeHull = cv.convexHull(rightEye)
-    #     cv.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
-    #     cv.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
-
-    #     cv.putText(frame, f'{ear:.2f}',(int(width*0.05), int(height*0.1)),
-    #                        cv.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 3, cv.LINE_AA)
-
+    # frame_rgb = imutils.resize(frame_rgb, width=450)
+    frame_gray = cv.cvtColor(frame_rgb, cv.COLOR_RGB2GRAY)
     
-    # # 2. Presence/absence feature based on face detection
-    # results = face_detection.process(frame_rgb) 
-    # # face detected
-    # if results.detections:
-    #     absence_counter = 0
-
-    #     if is_absent:
-    #         pyautogui.press('space')
+    # 1. Frontal face detection   
+    faces = detector(frame_gray)
+    for face in faces:
         
-    #     is_absent = False
+        # 2. Facial landmarks
+        landmarks = predictor(frame_gray, face)
+        landmarks = face_utils.shape_to_np(landmarks)
 
-    #    # draw bounding box
-    #     for detection in results.detections:
-    #         bbox = detection.location_data.relative_bounding_box
-    #         frame_height, frame_width = frame.shape[:2]
-    #         x, y = int(bbox.xmin * frame_width), int(bbox.ymin * frame_height)
-    #         w, h = int(bbox.width * frame_width), int(bbox.height * frame_height)
-    #         cv.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 1)
-    
-    # else:
-    #     absence_counter += 1
-    #     if absence_counter > absence_counter_threshold and is_absent == False:
-            
-    #         pyautogui.press('space')  
-    #         is_absent = True
-                    
+        # 3. Eye landmarks
+        leftEye = landmarks[lStart:lEnd]
+        rightEye = landmarks[rStart:rEnd]
 
-    frame = draw_info(frame, mode, class_id)
+        
+        # 4. Eye aspect ratio to detect sleepness
+        leftEAR = eye_aspect_ratio(leftEye)
+        rightEAR = eye_aspect_ratio(rightEye)
+		# average the eye aspect ratio together for both eyes
+        ear = (leftEAR + rightEAR) / 2.0
+        ear_history = track_history(ear_history, round(ear, 2), 20)
+        mean_ear = sum(ear_history) / len(ear_history)
+        
+
+        # check if sleeping, then pause the video 
+        # and set sleepping status to True to avoid
+        # 
+        if mean_ear < ear_threshold:
+            sleep_counter += 1
+
+            if sleep_counter > sleep_counter_thresh and is_sleeping == False:
+                pyautogui.press('space')
+                is_sleeping = True
+
+        else:
+            sleep_counter = 0
+            is_sleeping = False
+
+
+
+
+
+        leftEyeHull = cv.convexHull(leftEye)
+        rightEyeHull = cv.convexHull(rightEye)
+        cv.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
+        cv.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
+
+        cv.putText(frame, f'{mean_ear:.2f}',(int(width*0.95 ), int(height*0.08)),
+                           cv.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2, cv.LINE_AA)
+
+
+######################### ABSENCE DETECTION ###########################################################
+    # Based on media pipe face detection (more robust)
+    results = face_detection.process(frame_rgb)
+
+    # check if no face is detected to pause the video
+    if results.detections == None:
+        absence_counter += 1
+        if absence_counter > absence_counter_threshold and is_absent == False:
+            pyautogui.press('space')  
+            is_absent = True
+
+    else:
+        absence_counter = 0 
+        is_absent = False
+       # draw bounding box
+        for detection in results.detections:
+            bbox = detection.location_data.relative_bounding_box
+            frame_height, frame_width = frame.shape[:2]
+            x, y = int(bbox.xmin * frame_width), int(bbox.ymin * frame_height)
+            w, h = int(bbox.width * frame_width), int(bbox.height * frame_height)
+            cv.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 1)
+        
+                
+###########################################################################################
+    draw_info(frame, mode, class_id)
     cv.imshow('', frame)
 
 

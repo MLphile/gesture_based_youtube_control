@@ -9,12 +9,12 @@ pyautogui.FAILSAFE = False
 
 # track command history to avoid sending same command repeatedly
 # example: multiple subsequent clicks as long as the gesture is recognized
-def track_history(history, command, last_n = 3):
-    if len(history) < last_n:
-        history.append(command)
+def track_history(history, item, max_n = 3):
+    if len(history) < max_n:
+        history.append(item)
     else:
         history.popleft()
-        history.append(command)
+        history.append(item)
     return history
 
 # Running mode (normal or data logging)
@@ -62,9 +62,7 @@ def draw_info(frame, mode, class_id):
         if class_id != -1:
             cv.putText(frame, "Class ID:" + str(class_id), (10, 110),
                        cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 1,
-                       cv.LINE_AA)
-
-    return frame
+                       cv.LINE_AA)  
 
 
 # Extract x, y coordinates of the landmarks
@@ -157,7 +155,6 @@ def mouse_zone_to_screen(coordinates, mouse_zone, screen_size):
     return new_x, new_y
 
 
-
 def calc_distance(pt1, pt2):
     # compute euclidian distance between two points pt1 and pt2
     return np.linalg.norm(np.array(pt1) - np.array(pt2))
@@ -177,7 +174,7 @@ def get_all_distances(pts_list):
 def normalize_distances(d0, distances_list):
     # normalize distances in distances_list by d0
     return np.array(distances_list) / d0
-
+   
 
 def show_save_info(frame, save_icon, nb_saved , vertical_shift = 40, horintal_shift = 150):
     frame_w = frame.shape[1]
@@ -192,6 +189,8 @@ def show_save_info(frame, save_icon, nb_saved , vertical_shift = 40, horintal_sh
     text_x = frame_w - horintal_shift + icon_w + 10
     cv.putText(frame, str(nb_saved), (text_x, text_y), cv.FONT_HERSHEY_SIMPLEX, 
                 1 , (255, 0, 0), 2, cv.LINE_AA)
+
+
 
 def eye_aspect_ratio(eye):
 	# compute the euclidean distances between the two sets of
