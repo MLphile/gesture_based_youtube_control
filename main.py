@@ -5,37 +5,35 @@ import dlib
 from imutils import face_utils
 from utils import *
 
-# Set to nornal mode (=> no recording of data)
-mode = 0
-
-# Camera resolution
-width = 1028//2
-height = 720//2
 
 
-# Camera setting
+# Initialise to normal mode (=> no recording of data)
+MODE = 0
+
+# Camera settings
+WIDTH = 1028//2
+HEIGHT = 720//2
+
 cap = cv.VideoCapture(0)
-cap.set(cv.CAP_PROP_FRAME_WIDTH, width)
-cap.set(cv.CAP_PROP_FRAME_HEIGHT, height)
+cap.set(cv.CAP_PROP_FRAME_WIDTH, WIDTH)
+cap.set(cv.CAP_PROP_FRAME_HEIGHT, HEIGHT)
 
 # Icon to indicate saved links
-img_path = 'images/floppy-icon.png'
-save_icon = cv.resize(cv.imread(img_path), (50, 50), interpolation=cv.INTER_AREA)
+ICON_PATH = 'images/floppy-icon.png'
+save_icon = cv.resize(cv.imread(ICON_PATH), (50, 50), interpolation=cv.INTER_AREA)
 
 # Nombre of saved links
-counter_saved = 0
+COUNTER_SAVED = 0
 
-# important keypoints (wrist + tips)
-to_save = [keypoint for keypoint in range(0, 21, 4)]
+# important keypoints (wrist + tips coordinates)
+# for training the model
+TRAINING_KEYPOINTS = [keypoint for keypoint in range(0, 21, 4)]
 
-# Screen size
-screen_size = pyautogui.size()
 
 # Mouse mouvement stabilization
-smooth_factor = 6
-
-plocX, plocY = 0, 0 # previous x, y locations
-clocX, clocY = 0, 0 # current x, y locations
+SMOOTH_FACTOR = 6
+PLOCX, PLOCY = 0, 0 # previous x, y locations
+CLOX, CLOXY = 0, 0 # current x, y locations
 
 
 # Hand detector
@@ -47,7 +45,7 @@ hands = mp_hands.Hands(
 # Hand landmarks drawing
 mp_drawing = mp.solutions.drawing_utils
 
-# Load model
+# Load saved model for hand gesture recognition
 GESTURE_RECOGNIZER_PATH = 'models/model.pth'
 model.load_state_dict(torch.load(GESTURE_RECOGNIZER_PATH))
 
@@ -57,13 +55,13 @@ labels = pd.read_csv(LABEL_PATH, header=None).values.flatten().tolist()
 
 
 # confidence threshold(required to translate gestures into commands)
-conf_threshold = 0.9
+CONF_THRESH = 0.9
 
-# command history
-history = deque([])
+# history to track the n last detected commands
+GESTURE_HISTORY = deque([])
 
 # general counter (for volum up/down; forward/backward)
-gen_counter = 0
+GEN_COUNTER = 0
 
 # Face detector mediapipe
 mp_face_detection = mp.solutions.face_detection
@@ -71,9 +69,9 @@ mp_face_detection = mp.solutions.face_detection
 face_detection = mp_face_detection.FaceDetection(
     model_selection=0, min_detection_confidence=0.75)
    
-is_absent = None
-absence_counter = 0
-absence_counter_threshold = 20
+IS_ABSENT = None # only for testing purposes...change this by video status (paused or playing)
+ABSENCE_COUNTER = 0
+ABSENCE_COUNTER_THRESH = 20
 
 # Frontal face + face landmarks
 SHAPE_PREDICTOR_PATH = "models/shape_predictor_68_face_landmarks.dat"
@@ -83,11 +81,13 @@ lStart, lEnd = face_utils.FACIAL_LANDMARKS_IDXS["left_eye"]
 rStart, rEnd = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]
 
 
-is_sleeping = None
-sleep_counter = 0
-sleep_counter_thresh = 20
-ear_threshold = 0.21 
-ear_history = deque([])     
+IS_SLEEPING = None # only for testing purposes...change this by video status (paused or playing)
+SLEEP_COUNTER = 0
+SLEEP_COUNTER_THRESH = 20
+EAR_THRESH = 0.21 
+EAR_HISTORY = deque([])
+
+
 while True:
     key = cv.waitKey(1)
     if key == ord('q'):
@@ -95,7 +95,7 @@ while True:
 
     
     # choose mode (normal or recording)
-    mode = select_mode(key, mode=mode)
+    mode = select_mode(key, mode=MODE)
 
     # class id for recording
     class_id = get_class_id(key)
@@ -113,10 +113,10 @@ while True:
     det_zone, m_zone = det_mouse_zones(frame)
 
     # Overlay Icon image and show how many saved links
-    show_save_info(frame, save_icon, nb_saved = counter_saved)
+    show_save_info(frame, save_icon, nb_saved = COUNTER_SAVED)
     
 
-######################### GESTURE DETECTION ###########################################################
+######################### GESTURE DETECTION / TRAINING POINT LOGGING ###########################################################
  
     results = hands.process(frame_rgb)
     if results.multi_hand_landmarks:
@@ -128,7 +128,7 @@ while True:
 
             # get landmarks coordinates
             coordinates_list = calc_landmark_coordinates(frame_rgb, hand_landmarks)
-            important_points = [coordinates_list[i] for i in to_save]
+            important_points = [coordinates_list[i] for i in TRAINING_KEYPOINTS]
 
 
             # Conversion to relative coordinates and normalized coordinates
@@ -149,35 +149,29 @@ while True:
             conf, pred = predict(features, model)
             gesture = labels[pred]
 
-
-
-            # if conf >= conf_threshold:
-            #     cv.putText(frame, f'{gesture} | {conf: .2f}', (int(width*0.05), int(height*0.1)),
-            #         cv.FONT_HERSHEY_COMPLEX, 1, (255, 0, 255), 2, cv.LINE_AA)
-
                 
 ######################### YOUTUBE PLAYER CONTROL ###########################################################                       
                 
             # check if middle finger mcp is inside the detection zone and prediction confidence is good enough
-            if cv.pointPolygonTest(det_zone, coordinates_list[9], False) == 1 and conf >= conf_threshold: 
+            if cv.pointPolygonTest(det_zone, coordinates_list[9], False) == 1 and conf >= CONF_THRESH: 
 
                 # track command history
-                history = track_history(history, gesture)
-                # print(history)
-                if len(history) >= 2:
-                    before_last = history[len(history) - 2]
+                gest_hist = track_history(GESTURE_HISTORY, gesture)
+
+                if len(gest_hist) >= 2:
+                    before_last = gest_hist[len(gest_hist) - 2]
                 else:
-                    before_last = history[0]
+                    before_last = gest_hist[0]
 
             ############### Mouse ##################
                 if gesture == 'Move_mouse':
-                    x, y = mouse_zone_to_screen(coordinates_list[9], m_zone, screen_size)
+                    x, y = mouse_zone_to_screen(coordinates_list[9], m_zone)
                     
                     # smoothe mouse movements
-                    clocX = plocX + (x - plocX) / smooth_factor
-                    clocY = plocY + (y - plocY) / smooth_factor
-                    pyautogui.moveTo(clocX, clocY)
-                    plocX, plocY = clocX, clocY
+                    CLOX = PLOCX + (x - PLOCX) / SMOOTH_FACTOR
+                    CLOXY = PLOCY + (y - PLOCY) / SMOOTH_FACTOR
+                    pyautogui.moveTo(CLOX, CLOXY)
+                    PLOCX, PLOCY = CLOX, CLOXY
 
                 if gesture == 'Right_click' and before_last != 'Right_click':
                     pyautogui.rightClick()
@@ -197,23 +191,23 @@ while True:
                     pyautogui.press('volumedown')
 
                 if gesture == 'Vol_up_ytb':
-                    gen_counter += 1
-                    if gen_counter % 10 == 0:
+                    GEN_COUNTER += 1
+                    if GEN_COUNTER % 10 == 0:
                         pyautogui.press('up')
 
                 if gesture == 'Vol_down_ytb':
-                    gen_counter += 1
-                    if gen_counter % 10 == 0:
+                    GEN_COUNTER += 1
+                    if GEN_COUNTER % 10 == 0:
                         pyautogui.press('down')
 
                 if gesture == 'Forward':
-                    gen_counter += 1
-                    if gen_counter % 10 == 0:
+                    GEN_COUNTER += 1
+                    if GEN_COUNTER % 10 == 0:
                         pyautogui.press('right')
                 
                 if gesture == 'Backward':
-                    gen_counter += 1
-                    if gen_counter % 10 == 0:
+                    GEN_COUNTER += 1
+                    if GEN_COUNTER % 10 == 0:
                         pyautogui.press('left')
                 
                 if gesture == 'Screen' and before_last != 'Screen':
@@ -223,19 +217,17 @@ while True:
                     # replace before_last condition by add condition 
                     # to check if link is already saved(i.e in database)
                     # count only if link is not in database
-                    # instead of using a counter, count the number of items
+                    
+                    COUNTER_SAVED += 1
+                    # instead of using a counter, count the number of saved links links
                     # in the database
-                    counter_saved += 1
 
                 if gesture == 'Nothing':
-                    gen_counter = 0 
+                    GEN_COUNTER = 0 
 
 
-
-
-                
-                
-                cv.putText(frame, f'{gesture} | {conf: .2f}', (int(width*0.05), int(height*0.07)),
+                # show detected gesture
+                cv.putText(frame, f'{gesture} | {conf: .2f}', (int(WIDTH*0.05), int(HEIGHT*0.07)),
                     cv.FONT_HERSHEY_COMPLEX, 0.8, (0, 0, 255), 1, cv.LINE_AA)
 
                 
@@ -243,7 +235,6 @@ while True:
     
 ######################### SLEEPNESS DETECTION ########################################################### 
 
-    # frame_rgb = imutils.resize(frame_rgb, width=450)
     frame_gray = cv.cvtColor(frame_rgb, cv.COLOR_RGB2GRAY)
     
     # 1. Frontal face detection   
@@ -259,39 +250,34 @@ while True:
         rightEye = landmarks[rStart:rEnd]
 
         
-        # 4. Eye aspect ratio to detect sleepness
+        # 4. Eye aspect ratio to detect when eyes are closed
         leftEAR = eye_aspect_ratio(leftEye)
         rightEAR = eye_aspect_ratio(rightEye)
 		# average the eye aspect ratio together for both eyes
         ear = (leftEAR + rightEAR) / 2.0
-        ear_history = track_history(ear_history, round(ear, 2), 20)
-        mean_ear = sum(ear_history) / len(ear_history)
+        EAR_HISTORY = track_history(EAR_HISTORY, round(ear, 2), 20)
+        mean_ear = sum(EAR_HISTORY) / len(EAR_HISTORY)
         
 
-        # check if sleeping, then pause the video 
-        # and set sleepping status to True to avoid
-        # 
-        if mean_ear < ear_threshold:
-            sleep_counter += 1
+        # check if eyes are closed for a certain number of consecutive frames, then pause the video 
+        if mean_ear < EAR_THRESH:
+            SLEEP_COUNTER += 1
 
-            if sleep_counter > sleep_counter_thresh and is_sleeping == False:
+            if SLEEP_COUNTER > SLEEP_COUNTER_THRESH and IS_SLEEPING == False:
                 pyautogui.press('space')
-                is_sleeping = True
+                IS_SLEEPING = True
 
         else:
-            sleep_counter = 0
-            is_sleeping = False
+            SLEEP_COUNTER = 0
+            IS_SLEEPING = False
 
-
-
-
-
+        # show eye contours and mean EAR
         leftEyeHull = cv.convexHull(leftEye)
         rightEyeHull = cv.convexHull(rightEye)
-        cv.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
-        cv.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
+        cv.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 2)
+        cv.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 2 )
 
-        cv.putText(frame, f'{mean_ear:.2f}',(int(width*0.95 ), int(height*0.08)),
+        cv.putText(frame, f'{mean_ear:.2f}',(int(WIDTH*0.95 ), int(HEIGHT*0.08)),
                            cv.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2, cv.LINE_AA)
 
 
@@ -299,17 +285,18 @@ while True:
     # Based on media pipe face detection (more robust)
     results = face_detection.process(frame_rgb)
 
-    # check if no face is detected to pause the video
+    # check if no face is detected, if so pause the video
     if results.detections == None:
-        absence_counter += 1
-        if absence_counter > absence_counter_threshold and is_absent == False:
+        ABSENCE_COUNTER += 1
+        if ABSENCE_COUNTER > ABSENCE_COUNTER_THRESH and IS_ABSENT == False:
             pyautogui.press('space')  
-            is_absent = True
+            IS_ABSENT = True
 
     else:
-        absence_counter = 0 
-        is_absent = False
-       # draw bounding box
+        ABSENCE_COUNTER = 0 
+        IS_ABSENT = False
+
+       # draw face bounding box
         for detection in results.detections:
             bbox = detection.location_data.relative_bounding_box
             frame_height, frame_width = frame.shape[:2]
