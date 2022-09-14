@@ -1,3 +1,4 @@
+## Short repo description  
 This repo is about using Machine learning to recognise a set of hand gestures and use those to interact with youtube player.  
 The project falls within the area of gesture-based user-interfaces. These systems can for example:  
 * help people with disabilities to easily interact with a wide range of devices and by this means make them feel more autonomous and indepedent;
@@ -13,5 +14,6 @@ The interactions that will be implemented are:
 * save the video link for watching later;
 * additionally, if user is sleeping or has left, automatically pause the video.  
 
-I will post very soon pictures of the corresponding gestures and a short demo video :)
+
+I'm a bit busy now completing the project, but a more detailed documentation is coming very soon with pictures of the corresponding gestures and a short demo video :)!
  
