@@ -15,5 +15,6 @@ The interactions that will be implemented are:
 * additionally, if user is sleeping or has left, automatically pause the video.  
 
 
-I'm a bit busy now completing the project, but a more detailed documentation is coming very soon with pictures of the corresponding gestures and a short demo video :)!
+I'm a bit busy now completing the project, but a more detailed documentation is coming very soon with pictures of the corresponding gestures and a short demo video :)!  
+I did my best to document the code I've written so far...so feel free to check it out. All feedbacks on what can be improved are welcome :)
  
