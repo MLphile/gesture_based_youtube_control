@@ -10,6 +10,17 @@ pyautogui.FAILSAFE = False
 # track command history to avoid sending same command repeatedly
 # example: multiple subsequent clicks as long as the gesture is recognized
 def track_history(history, item, max_n = 3):
+    """ Keeps track of up to max_n items stored in history.
+
+    Args:
+        history (Deque: Doubly Ended Queue): A data structure where items are stored.
+        item (_type_): What to keep track of.
+        max_n (int, optional): Maximum number of items to store. Defaults to 3.
+
+    Returns:
+        Deque: A list (Deque) of elements to track
+
+    """
     if len(history) < max_n:
         history.append(item)
     else:
@@ -17,17 +28,36 @@ def track_history(history, item, max_n = 3):
         history.append(item)
     return history
 
-# Running mode (normal or data logging)
+
 def select_mode(key, mode):
-    if key == ord('n'):  # normal mode
+    """ Active either the normal mode (0 => nothing happens)
+    or the recording mode (1 => saving data)
+
+    Args:
+        key (int): An integer value triggered by pressing 'n' (for normal mode) or 'r' (for recording mode)
+        mode (int): The current mode
+
+    Returns:
+        int: The activated mode
+    """
+    if key == ord('n'):
         mode = 0
-    if key == ord('r'):  # record data
+    if key == ord('r'):
         mode = 1
     return mode
 
 
-# ID associated to each hand gesture
+
 def get_class_id(key):
+    """ Maps pressed keys on keyboard to a class label that will
+    associated to a given gesture.
+
+    Args:
+        key (int): A key on the keyboard
+
+    Returns:
+        int: A class id/label
+    """
     class_id = -1
 
     if 48 <= key <= 57:  # numeric keys
@@ -41,13 +71,19 @@ def get_class_id(key):
     return class_id
 
 
-# record landmarks
-def logging_csv(class_id, mode, features):
+
+def logging_csv(class_id, mode, features, file_path):
+    """ Records the gesture label together with features representing that gesture in a csv file.
+
+    Args:
+        class_id (int): The label corresponding to a given gesture
+        mode (int): Activate the recording mode (1)
+        features (Array): An array of numbers that maps to the gesture.
+    """
     if mode == 0:
         pass
     if mode == 1 and (0 <= class_id <= 12):
-        csv_path = 'data/keypoint.csv'
-        with open(csv_path, 'a', newline="") as f:
+        with open(file_path, 'a', newline="") as f:
             writer = csv.writer(f)
             writer.writerow([class_id, *features])
 
@@ -57,11 +93,11 @@ def draw_info(frame, mode, class_id):
     if mode == 1:
 
         cv.putText(frame, 'Logging Mode', (10, 90),
-                   cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 1, cv.LINE_AA)
+                   cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 1, cv.LINE_AA)
 
         if class_id != -1:
             cv.putText(frame, "Class ID:" + str(class_id), (10, 110),
-                       cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 1,
+                       cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 1,
                        cv.LINE_AA)  
 
 
@@ -142,11 +178,12 @@ def det_mouse_zones(frame, draw_det_zone = True, draw_mouse_zone = True,
 
 
 
-def mouse_zone_to_screen(coordinates, mouse_zone, screen_size):
+def mouse_zone_to_screen(coordinates, mouse_zone):
     """
     Convert coordinates in such a way that the mouse_zone maps to 
     the screen_size
     """
+    screen_size = pyautogui.size()
     x, y = coordinates
     screen_width, screen_height = screen_size
     
