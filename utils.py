@@ -9,25 +9,55 @@ pyautogui.FAILSAFE = False
 
 # track command history to avoid sending same command repeatedly
 # example: multiple subsequent clicks as long as the gesture is recognized
-def track_history(history, command, last_n = 3):
-    if len(history) < last_n:
-        history.append(command)
+def track_history(history, item, max_n = 3):
+    """ Keeps track of up to max_n items stored in history.
+
+    Args:
+        history (Deque: Doubly Ended Queue): A data structure where items are stored.
+        item (_type_): What to keep track of.
+        max_n (int, optional): Maximum number of items to store. Defaults to 3.
+
+    Returns:
+        Deque: A list (Deque) of elements to track
+
+    """
+    if len(history) < max_n:
+        history.append(item)
     else:
         history.popleft()
-        history.append(command)
+        history.append(item)
     return history
 
-# Running mode (normal or data logging)
+
 def select_mode(key, mode):
-    if key == ord('n'):  # normal mode
+    """ Active either the normal mode (0 => nothing happens)
+    or the recording mode (1 => saving data)
+
+    Args:
+        key (int): An integer value triggered by pressing 'n' (for normal mode) or 'r' (for recording mode)
+        mode (int): The current mode
+
+    Returns:
+        int: The activated mode
+    """
+    if key == ord('n'):
         mode = 0
-    if key == ord('r'):  # record data
+    if key == ord('r'):
         mode = 1
     return mode
 
 
-# ID associated to each hand gesture
+
 def get_class_id(key):
+    """ Maps pressed keys on keyboard to a class label that will
+    associated to a given gesture.
+
+    Args:
+        key (int): A key on the keyboard
+
+    Returns:
+        int: A class id/label
+    """
     class_id = -1
 
     if 48 <= key <= 57:  # numeric keys
@@ -41,13 +71,19 @@ def get_class_id(key):
     return class_id
 
 
-# record landmarks
-def logging_csv(class_id, mode, features):
+
+def logging_csv(class_id, mode, features, file_path):
+    """ Records the gesture label together with features representing that gesture in a csv file.
+
+    Args:
+        class_id (int): The label corresponding to a given gesture
+        mode (int): Activate the recording mode (1)
+        features (Array): An array of numbers that maps to the gesture.
+    """
     if mode == 0:
         pass
     if mode == 1 and (0 <= class_id <= 12):
-        csv_path = 'data/keypoint.csv'
-        with open(csv_path, 'a', newline="") as f:
+        with open(file_path, 'a', newline="") as f:
             writer = csv.writer(f)
             writer.writerow([class_id, *features])
 
@@ -57,16 +93,15 @@ def draw_info(frame, mode, class_id):
     if mode == 1:
 
         cv.putText(frame, 'Logging Mode', (10, 90),
-                   cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 1, cv.LINE_AA)
+                   cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 1, cv.LINE_AA)
 
         if class_id != -1:
             cv.putText(frame, "Class ID:" + str(class_id), (10, 110),
-                       cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 1,
-                       cv.LINE_AA)
-
-    return frame
+                       cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 1,
+                       cv.LINE_AA)  
 
 
+# Extract x, y coordinates of the landmarks
 def calc_landmark_coordinates(frame, landmarks):
     frame_height, frame_width = frame.shape[:2]
 
@@ -102,7 +137,6 @@ def pre_process_landmark(landmark_list):
 
 
 # prediction
-
 def predict(landmarks, model):
 
     model.eval()
@@ -144,11 +178,12 @@ def det_mouse_zones(frame, draw_det_zone = True, draw_mouse_zone = True,
 
 
 
-def mouse_zone_to_screen(coordinates, mouse_zone, screen_size):
+def mouse_zone_to_screen(coordinates, mouse_zone):
     """
     Convert coordinates in such a way that the mouse_zone maps to 
     the screen_size
     """
+    screen_size = pyautogui.size()
     x, y = coordinates
     screen_width, screen_height = screen_size
     
@@ -156,9 +191,6 @@ def mouse_zone_to_screen(coordinates, mouse_zone, screen_size):
     new_y = np.interp(y, (mouse_zone[0][1], mouse_zone[2][1]), (0, screen_height))
     return new_x, new_y
 
-
-def mouse_move(x, y):
-        pyautogui.moveTo(x, y)
 
 def calc_distance(pt1, pt2):
     # compute euclidian distance between two points pt1 and pt2
@@ -179,17 +211,22 @@ def get_all_distances(pts_list):
 def normalize_distances(d0, distances_list):
     # normalize distances in distances_list by d0
     return np.array(distances_list) / d0
+   
 
+def show_save_info(frame, save_icon, nb_saved , vertical_shift = 40, horintal_shift = 150):
+    frame_w = frame.shape[1]
+    icon_h, icon_w = save_icon.shape[:2]
 
-# def mouse_left_click(index_finger_tip_y, index_finger_dip_y, time_after_click = 0):
-#     if (index_finger_tip_y >= index_finger_dip_y) and index_finger_dip_y > 0:
-#         pyautogui.click()
-#         print('left click')
+    # Overlay icon image on frame
+    frame[vertical_shift:vertical_shift + icon_h,
+            frame_w - horintal_shift:frame_w - horintal_shift + icon_w] = save_icon
 
-# def mouse_right_click(thump_tip_x, thump_ip_x):
-#     if (thump_tip_x >= thump_ip_x):
-#         # pyautogui.rightClick()
-#         print('right click')
+    # Show the number of links saved
+    text_y = vertical_shift + icon_h//2
+    text_x = frame_w - horintal_shift + icon_w + 10
+    cv.putText(frame, str(nb_saved), (text_x, text_y), cv.FONT_HERSHEY_SIMPLEX, 
+                1 , (255, 0, 0), 2, cv.LINE_AA)
+
 
 
 def eye_aspect_ratio(eye):
