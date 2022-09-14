@@ -5,10 +5,11 @@ import dlib
 from imutils import face_utils
 from utils import *
 
+################################################### VARIABLES INITIALIZATION ###########################################################
 
-
-# Initialise to normal mode (=> no recording of data)
+# Set to normal mode (=> no recording of data)
 MODE = 0
+CSV_PATH = 'data/keypoint.csv'
 
 # Camera settings
 WIDTH = 1028//2
@@ -63,17 +64,17 @@ GESTURE_HISTORY = deque([])
 # general counter (for volum up/down; forward/backward)
 GEN_COUNTER = 0
 
-# Face detector mediapipe
+# Face detection (absence feature)
 mp_face_detection = mp.solutions.face_detection
 
 face_detection = mp_face_detection.FaceDetection(
     model_selection=0, min_detection_confidence=0.75)
-   
+
 IS_ABSENT = None # only for testing purposes...change this by video status (paused or playing)
 ABSENCE_COUNTER = 0
 ABSENCE_COUNTER_THRESH = 20
 
-# Frontal face + face landmarks
+# Frontal face + face landmarks (sleepness feature)
 SHAPE_PREDICTOR_PATH = "models/shape_predictor_68_face_landmarks.dat"
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(SHAPE_PREDICTOR_PATH)
@@ -86,6 +87,10 @@ SLEEP_COUNTER = 0
 SLEEP_COUNTER_THRESH = 20
 EAR_THRESH = 0.21 
 EAR_HISTORY = deque([])
+
+################################################### INITIALIZATION END ###########################################################
+
+
 
 
 while True:
@@ -116,7 +121,7 @@ while True:
     show_save_info(frame, save_icon, nb_saved = COUNTER_SAVED)
     
 
-######################### GESTURE DETECTION / TRAINING POINT LOGGING ###########################################################
+############################################ GESTURE DETECTION / TRAINING POINT LOGGING ###########################################################
  
     results = hands.process(frame_rgb)
     if results.multi_hand_landmarks:
@@ -143,14 +148,14 @@ while True:
             # Write to the csv file "keypoint.csv"(if mode == 1)
             # logging_csv(class_id, mode, preprocessed)
             features = np.concatenate([preprocessed, distances])
-            logging_csv(class_id, mode, features)
+            logging_csv(class_id, mode, features, CSV_PATH)
 
             # inference
             conf, pred = predict(features, model)
             gesture = labels[pred]
 
                 
-######################### YOUTUBE PLAYER CONTROL ###########################################################                       
+####################################################### YOUTUBE PLAYER CONTROL ###########################################################                       
                 
             # check if middle finger mcp is inside the detection zone and prediction confidence is good enough
             if cv.pointPolygonTest(det_zone, coordinates_list[9], False) == 1 and conf >= CONF_THRESH: 
@@ -214,12 +219,11 @@ while True:
                     pyautogui.press('f')
                 
                 if gesture == 'Save' and before_last != 'Save':
-                    # replace before_last condition by add condition 
-                    # to check if link is already saved(i.e in database)
-                    # count only if link is not in database
+                    # replace the <before_last> condition by a condition 
+                    # that checks if the link we'd like to save is already saved(e.g. in database)
                     
                     COUNTER_SAVED += 1
-                    # instead of using a counter, count the number of saved links links
+                    # instead of using a counter, count the number of already saved links
                     # in the database
 
                 if gesture == 'Nothing':
@@ -233,7 +237,7 @@ while True:
                 
 
     
-######################### SLEEPNESS DETECTION ########################################################### 
+##################################################### SLEEPNESS DETECTION ########################################################### 
 
     frame_gray = cv.cvtColor(frame_rgb, cv.COLOR_RGB2GRAY)
     
@@ -274,14 +278,15 @@ while True:
         # show eye contours and mean EAR
         leftEyeHull = cv.convexHull(leftEye)
         rightEyeHull = cv.convexHull(rightEye)
-        cv.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 2)
-        cv.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 2 )
+        cv.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
+        cv.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
 
-        cv.putText(frame, f'{mean_ear:.2f}',(int(WIDTH*0.95 ), int(HEIGHT*0.08)),
+        cv.putText(frame, f'EAR: {mean_ear:.2f}',(int(WIDTH*0.95 ), int(HEIGHT*0.08)),
                            cv.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2, cv.LINE_AA)
 
 
-######################### ABSENCE DETECTION ###########################################################
+################################################# ABSENCE DETECTION ###########################################################
+
     # Based on media pipe face detection (more robust)
     results = face_detection.process(frame_rgb)
 
@@ -303,12 +308,11 @@ while True:
             x, y = int(bbox.xmin * frame_width), int(bbox.ymin * frame_height)
             w, h = int(bbox.width * frame_width), int(bbox.height * frame_height)
             cv.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 1)
-        
-                
-###########################################################################################
+
+
+
+
     draw_info(frame, mode, class_id)
     cv.imshow('', frame)
-
-
 cap.release()
 cv.destroyAllWindows()
