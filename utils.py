@@ -255,15 +255,15 @@ def normalize_distances(d0, distances_list):
 
 def show_save_info(frame, save_icon, nb_saved , vertical_shift = 40, horintal_shift = 150):
     """
-
+    Shows how many items are saved (e.g., numbers of Youtube video links to watch later)
     Args:
-        frame (_type_): _description_
-        save_icon (_type_): _description_
-        nb_saved (_type_): _description_
-        vertical_shift (int, optional): _description_. Defaults to 40.
-        horintal_shift (int, optional): _description_. Defaults to 150.
+        frame (numpy array): Image from captured webcam video
+        save_icon (png image): Icon representing saved elements
+        nb_saved (int): How many items are saved
+        vertical_shift (int, optional): By how pixels to shift from frame's top edge to overlay save_icon. Defaults to 40.
+        horintal_shift (int, optional): By how pixels to shift from frame's right edge to overlay save_icon. Defaults to 150.
     """
-    frame_w = frame.shape[1]
+    frame_w = frame.shape[1] 
     icon_h, icon_w = save_icon.shape[:2]
 
     # Overlay icon image on frame
