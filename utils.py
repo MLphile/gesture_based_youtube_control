@@ -53,7 +53,7 @@ def get_class_id(key):
     associated to a given gesture.
 
     Args:
-        key (int): A key on the keyboard
+        key (int): A key on the keyboard (currently numeric keys, capital A, B and C)
 
     Returns:
         int: A class id/label
@@ -62,12 +62,9 @@ def get_class_id(key):
 
     if 48 <= key <= 57:  # numeric keys
         class_id = key - 48
-    if key == 65: # capital A
-        class_id = 10
-    if key == 66: # capital B
-        class_id = 11 
-    if key == 67: # capital C
-        class_id = 12
+        
+    if 65 <=  key <=  90:
+        class_id = key - 55 
     return class_id
 
 
@@ -88,8 +85,11 @@ def logging_csv(class_id, mode, features, file_path):
             writer.writerow([class_id, *features])
 
 
-# Annotate frame
+
 def draw_info(frame, mode, class_id):
+    """Show info about whether the logging mode is activated
+    and which class id has been triggered by pressing on the keyboard
+    """
     if mode == 1:
 
         cv.putText(frame, 'Logging Mode', (10, 90),
@@ -101,59 +101,94 @@ def draw_info(frame, mode, class_id):
                        cv.LINE_AA)  
 
 
-# Extract x, y coordinates of the landmarks
+
 def calc_landmark_coordinates(frame, landmarks):
+    """ Converts relative landmark coordinates to actual ones.
+    Returns a list of those coordinates (x, y).
+    """
     frame_height, frame_width = frame.shape[:2]
 
     landmark_coordinates = []
 
-    # Keypoint
+    
     for landmark in landmarks.landmark:
         landmark_x = int(landmark.x * frame_width)
         landmark_y = int(landmark.y * frame_height)
 
-        landmark_coordinates.append([landmark_x, landmark_y])
+        landmark_coordinates.append((landmark_x, landmark_y))
 
     return landmark_coordinates
 
 
-# preprocess coordinates
+
 def pre_process_landmark(landmark_list):
+    """ Preprocesses landmark coordinates through the following steps:
+    1. Computes the relative locations all coordinates to the wrist
+    2. Flatten the 2D array containing the coordinates into 1D
+    3. Normalize the coordinates with regard to the max value (absolute value)
+        Remove wrist coordinates.
+
+    Args:
+        landmark_list (List of tuples): List containing the coordinates
+
+    Returns:
+        Array: 1D array of coordinates
+    """
     coordinates = np.array(landmark_list)
 
-    # relative coordinates to wrist keypoints
+    # relative coordinates to wrist
     wrist_coordinates = coordinates[0]
     relatives = coordinates - wrist_coordinates
 
-    # Convert back to 1D array
+    # Convert to 1D array
     flattened = relatives.flatten()
 
-    # Normalize between (-1, 1), exclude wrist coordinates(always 0)
+    # Normalize between (-1, 1) and exclude wrist coordinates(always 0)
     max_value = np.abs(flattened).max()
-
     normalized = flattened[2:]/max_value
     
     return normalized
 
 
-# prediction
-def predict(landmarks, model):
+ 
+def predict(features, model):
+    """ Predicts the detected hand gesture and outputs both gesture label and 
+    the corresponding probability.
+
+    Args:
+        features (1D Array): Values from which to make prediction
+        model (Pytorch MLP model): Model for making prediction
+
+    Returns:
+        tuple: (probability, prediction)
+    """
 
     model.eval()
     with torch.no_grad():
-        landmarks = torch.tensor(landmarks.reshape(1, -1), dtype=torch.float)
-        # confidence = torch.exp(model(landmarks))
-        confidence = model(landmarks)
-    # return torch.argmax(model(landmarks), dim=1).item()
+        features = torch.tensor(features.reshape(1, -1), dtype=torch.float)
+        confidence = model(features)
     conf, pred = torch.max(confidence, dim=1)
     return conf.item(), pred.item()
 
 
-# Compute and draw the detection zone in which hand gestures
-# are translated to commands.
-# Also determine the area in which mouse movements are possible
+
 def det_mouse_zones(frame, draw_det_zone = True, draw_mouse_zone = True, 
                     horizontal_shift = 0.05, vertical_shift = 0.10, mouse_shift = 10):
+    """ Determines the area (det_zone) where detected hand gestures are mapped to player functionalities.
+    Also computes the area (mouse_zone) on the frame that will represent the computer screen. This is the zone
+    in which the mouse is moved; it's located inside the det_zone.   
+
+    Args:
+        frame (numpy array): Image from captured webcam video
+        draw_det_zone (bool, optional): Whether to draw the det_zone on the frame. Defaults to True.
+        draw_mouse_zone (bool, optional): Whether to draw the mouse zone. Defaults to True.
+        horizontal_shift (float, optional): Controls where the top left x-coordinate of the det_zone is located (proportional to frame width). Defaults to 0.05.
+        vertical_shift (float, optional): Controls where the top left y-coordinate of the det_zone is located (proportional to frame height). Defaults to 0.10.
+        mouse_shift (int, optional): Controls by how much pixels to shift the det-zone corners, to compute the mouse zone. Defaults to 10.
+
+    Returns:
+        tuple: both det_zone and mouse_zone
+    """
     # Detection zone
     frame_height, frame_width = frame.shape[:2]
     det_zone_height, det_zone_width = frame_height // 2 , frame_width // 3
@@ -165,7 +200,7 @@ def det_mouse_zones(frame, draw_det_zone = True, draw_mouse_zone = True,
         cv.rectangle(frame, (xd, yd), (xd + det_zone_width, yd + det_zone_height), (255, 0, 255), 3)
 
     # Mouse zone (inside detection zone)
-    m_zone = np.array([(xd + mouse_shift, yd + mouse_shift), (xd + det_zone_width - mouse_shift, yd + mouse_shift), 
+    mouse_zone = np.array([(xd + mouse_shift, yd + mouse_shift), (xd + det_zone_width - mouse_shift, yd + mouse_shift), 
                         (xd + det_zone_width - mouse_shift, yd + det_zone_height - mouse_shift), 
                         (xd + mouse_shift, yd + det_zone_height - mouse_shift)])
 
@@ -173,15 +208,15 @@ def det_mouse_zones(frame, draw_det_zone = True, draw_mouse_zone = True,
         cv.rectangle(frame, (xd + mouse_shift, yd + mouse_shift), (xd + det_zone_width - mouse_shift, yd + det_zone_height - mouse_shift), 
                         (0, 255, 0), 2)
  
-    return det_zone, m_zone
+    return det_zone, mouse_zone
 
 
 
 
 def mouse_zone_to_screen(coordinates, mouse_zone):
     """
-    Convert coordinates in such a way that the mouse_zone maps to 
-    the screen_size
+    Converts coordinates in such a way that the mouse_zone maps to 
+    the screen size
     """
     screen_size = pyautogui.size()
     x, y = coordinates
@@ -193,27 +228,41 @@ def mouse_zone_to_screen(coordinates, mouse_zone):
 
 
 def calc_distance(pt1, pt2):
-    # compute euclidian distance between two points pt1 and pt2
+    """
+    Computes and returns the euclidian distance between two points pt1(x1, y1) and pt2(x2, y2)
+    """
     return np.linalg.norm(np.array(pt1) - np.array(pt2))
 
 
 def get_all_distances(pts_list):
-
-    # Compute all distances between pts in a given list (pts_list)
+    """
+    Computes and returns distances between all the points in a given list.
+    Points are tuple (or array-like) of x and y coordinates.
+    """
     pts = deque(pts_list)
     distances = deque()
     while len(pts) > 1:
         pt1 = pts.popleft()
         distances.extend( [calc_distance(pt1, pt2) for pt2 in pts] )
-    
     return distances
 
 def normalize_distances(d0, distances_list):
-    # normalize distances in distances_list by d0
+    """
+    Works out normalized distances and returns an array of those.
+    """
     return np.array(distances_list) / d0
    
 
 def show_save_info(frame, save_icon, nb_saved , vertical_shift = 40, horintal_shift = 150):
+    """
+
+    Args:
+        frame (_type_): _description_
+        save_icon (_type_): _description_
+        nb_saved (_type_): _description_
+        vertical_shift (int, optional): _description_. Defaults to 40.
+        horintal_shift (int, optional): _description_. Defaults to 150.
+    """
     frame_w = frame.shape[1]
     icon_h, icon_w = save_icon.shape[:2]
 
@@ -230,17 +279,18 @@ def show_save_info(frame, save_icon, nb_saved , vertical_shift = 40, horintal_sh
 
 
 def eye_aspect_ratio(eye):
+    """
+    Computes and return the eye aspect ratio (ear)
+    """
 	# compute the euclidean distances between the two sets of
 	# vertical eye landmarks
     A = calc_distance(eye[1], eye[5])
     B = calc_distance(eye[2], eye[4])
 
 	# compute the euclidean distance between the horizontal
-	# eye landmark
+	# eye landmarks
     C = calc_distance(eye[0], eye[3])
 
 	# compute the eye aspect ratio
     ear = (A + B) / (2.0 * C)
     return ear
-
-
