@@ -3,7 +3,7 @@ This repo is about using Machine learning to recognise a set of hand gestures an
 The project falls within the area of gesture-based user-interfaces. These systems can for example:  
 * help people with disabilities to easily interact with a wide range of devices and by this means make them feel more autonomous and indepedent;
 * contribute to reduce the widespread of contagious diseases such as corona through the implementation of contactless devices;
-* improves user-experience, because gesture-based interfaces are most the time more intuitive and easier to learn.  
+* improves user-experience, because gesture-based interfaces are most of the time more intuitive and easier to learn.  
 
 The interactions that will be implemented are:  
 * simple virtual mouse functionalities (move, left and right click);
