@@ -8,7 +8,7 @@ from utils import *
 ################################################### VARIABLES INITIALIZATION ###########################################################
 
 # Set to normal mode (=> no recording of data)
-MODE = 0
+mode = 0
 CSV_PATH = 'data/keypoint.csv'
 
 # Camera settings
@@ -92,15 +92,14 @@ EAR_HISTORY = deque([])
 
 
 
-
 while True:
-    key = cv.waitKey(1)
+    key = cv.waitKey(1) 
     if key == ord('q'):
         break
 
     
     # choose mode (normal or recording)
-    mode = select_mode(key, mode=MODE)
+    mode = select_mode(key, mode=mode)
 
     # class id for recording
     class_id = get_class_id(key)
@@ -119,7 +118,6 @@ while True:
 
     # Overlay Icon image and show how many saved links
     show_save_info(frame, save_icon, nb_saved = COUNTER_SAVED)
-    
 
 ############################################ GESTURE DETECTION / TRAINING POINT LOGGING ###########################################################
  
@@ -139,7 +137,7 @@ while True:
             # Conversion to relative coordinates and normalized coordinates
             preprocessed = pre_process_landmark(important_points)
             
-            # compute the needed distances to add as to coordinates features
+            # compute the needed distances to add to coordinate features
             d0 = calc_distance(coordinates_list[0], coordinates_list[5])
             pts_for_distances = [coordinates_list[i] for i in [4, 8, 12]]
             distances = normalize_distances(d0, get_all_distances(pts_for_distances)) 
@@ -148,16 +146,19 @@ while True:
             # Write to the csv file "keypoint.csv"(if mode == 1)
             # logging_csv(class_id, mode, preprocessed)
             features = np.concatenate([preprocessed, distances])
+            draw_info(frame, mode, class_id)
             logging_csv(class_id, mode, features, CSV_PATH)
+
+            
 
             # inference
             conf, pred = predict(features, model)
             gesture = labels[pred]
 
-                
+            
 ####################################################### YOUTUBE PLAYER CONTROL ###########################################################                       
                 
-            # check if middle finger mcp is inside the detection zone and prediction confidence is good enough
+            # check if middle finger mcp is inside the detection zone and prediction confidence is higher than a given threshold
             if cv.pointPolygonTest(det_zone, coordinates_list[9], False) == 1 and conf >= CONF_THRESH: 
 
                 # track command history
@@ -185,40 +186,40 @@ while True:
                     pyautogui.click()    
 
 
-            ############### Main gestures ################## 
+            ############### Hand gestures ################## 
                 if gesture == 'Play_Pause' and before_last != 'Play_Pause':
                     pyautogui.press('space')
                 
-                if gesture == 'Vol_up_gen':
+                elif gesture == 'Vol_up_gen':
                     pyautogui.press('volumeup')
 
-                if gesture == 'Vol_down_gen':
+                elif gesture == 'Vol_down_gen':
                     pyautogui.press('volumedown')
 
-                if gesture == 'Vol_up_ytb':
+                elif gesture == 'Vol_up_ytb':
                     GEN_COUNTER += 1
-                    if GEN_COUNTER % 10 == 0:
+                    if GEN_COUNTER % 8 == 0:
                         pyautogui.press('up')
 
-                if gesture == 'Vol_down_ytb':
+                elif gesture == 'Vol_down_ytb':
                     GEN_COUNTER += 1
-                    if GEN_COUNTER % 10 == 0:
+                    if GEN_COUNTER % 8 == 0:
                         pyautogui.press('down')
 
-                if gesture == 'Forward':
+                elif gesture == 'Forward':
                     GEN_COUNTER += 1
-                    if GEN_COUNTER % 10 == 0:
+                    if GEN_COUNTER % 8 == 0:
                         pyautogui.press('right')
                 
-                if gesture == 'Backward':
+                elif gesture == 'Backward':
                     GEN_COUNTER += 1
-                    if GEN_COUNTER % 10 == 0:
+                    if GEN_COUNTER % 8 == 0:
                         pyautogui.press('left')
                 
-                if gesture == 'Screen' and before_last != 'Screen':
+                elif gesture == 'fullscreen' and before_last != 'fullscreen':
                     pyautogui.press('f')
                 
-                if gesture == 'Save' and before_last != 'Save':
+                elif gesture == 'Save' and before_last != 'Save':
                     # replace the <before_last> condition by a condition 
                     # that checks if the link we'd like to save is already saved(e.g. in database)
                     
@@ -226,7 +227,7 @@ while True:
                     # instead of using a counter, count the number of already saved links
                     # in the database
 
-                if gesture == 'Nothing':
+                elif gesture == 'Neutral':
                     GEN_COUNTER = 0 
 
 
@@ -281,7 +282,7 @@ while True:
         cv.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
         cv.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
 
-        cv.putText(frame, f'EAR: {mean_ear:.2f}',(int(WIDTH*0.95 ), int(HEIGHT*0.08)),
+        cv.putText(frame, f'EAR: {mean_ear:.2f}',(int(WIDTH*0.90 ), int(HEIGHT*0.08)),
                            cv.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2, cv.LINE_AA)
 
 
@@ -310,9 +311,6 @@ while True:
             cv.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 1)
 
 
-
-
-    draw_info(frame, mode, class_id)
     cv.imshow('', frame)
 cap.release()
 cv.destroyAllWindows()

@@ -30,7 +30,7 @@ def track_history(history, item, max_n = 3):
 
 
 def select_mode(key, mode):
-    """ Active either the normal mode (0 => nothing happens)
+    """ Actives either the normal mode (0 => nothing happens)
     or the recording mode (1 => saving data)
 
     Args:
@@ -87,7 +87,7 @@ def logging_csv(class_id, mode, features, file_path):
 
 
 def draw_info(frame, mode, class_id):
-    """Show info about whether the logging mode is activated
+    """Shows info about whether the logging mode is activated
     and which class id has been triggered by pressing on the keyboard
     """
     if mode == 1:
@@ -124,8 +124,8 @@ def calc_landmark_coordinates(frame, landmarks):
 def pre_process_landmark(landmark_list):
     """ Preprocesses landmark coordinates through the following steps:
     1. Computes the relative locations all coordinates to the wrist
-    2. Flatten the 2D array containing the coordinates into 1D
-    3. Normalize the coordinates with regard to the max value (absolute value)
+    2. Flattens the 2D array containing the coordinates into 1D
+    3. Normalizes the coordinates with regard to the max value (absolute value)
         Remove wrist coordinates.
 
     Args:
