@@ -1,0 +1,37 @@
+header {
+  background-color: #f8f9fa;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+
+.ytb {
+  color: #dd2929 !important;
+}
+
+.inter {
+  color: #4240dc !important;
+}
+
+
+.form-input {
+  margin: 10px 0;
+  width: 100%;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: 5px;
+  border: none;
+  border: 2px outset #8b8eaf;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.btn {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 2px solid #4240dc;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: 700;
+  transition: 0.3s;
+}

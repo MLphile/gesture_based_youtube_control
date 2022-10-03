@@ -197,7 +197,7 @@ def det_mouse_zones(frame, draw_det_zone = True, draw_mouse_zone = True,
                     (xd, yd + det_zone_height)])
     
     if draw_det_zone:
-        cv.rectangle(frame, (xd, yd), (xd + det_zone_width, yd + det_zone_height), (255, 0, 255), 3)
+        cv.rectangle(frame, (xd, yd), (xd + det_zone_width, yd + det_zone_height), (0, 0, 255), 3)
 
     # Mouse zone (inside detection zone)
     mouse_zone = np.array([(xd + mouse_shift, yd + mouse_shift), (xd + det_zone_width - mouse_shift, yd + mouse_shift), 
@@ -206,7 +206,7 @@ def det_mouse_zones(frame, draw_det_zone = True, draw_mouse_zone = True,
 
     if draw_mouse_zone:
         cv.rectangle(frame, (xd + mouse_shift, yd + mouse_shift), (xd + det_zone_width - mouse_shift, yd + det_zone_height - mouse_shift), 
-                        (0, 255, 0), 2)
+                        (255, 255, 255), 2)
  
     return det_zone, mouse_zone
 

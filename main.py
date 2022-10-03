@@ -188,29 +188,29 @@ while True:
 
                 elif gesture == 'Vol_up_ytb':
                     GEN_COUNTER += 1
-                    if GEN_COUNTER % 8 == 0:
+                    if GEN_COUNTER % 4 == 0:
                         pyautogui.press('up')
 
                 elif gesture == 'Vol_down_ytb':
                     GEN_COUNTER += 1
-                    if GEN_COUNTER % 8 == 0:
+                    if GEN_COUNTER % 4 == 0:
                         pyautogui.press('down')
 
                 elif gesture == 'Forward':
                     GEN_COUNTER += 1
-                    if GEN_COUNTER % 8 == 0:
+                    if GEN_COUNTER % 4 == 0:
                         pyautogui.press('right')
                 
                 elif gesture == 'Backward':
                     GEN_COUNTER += 1
-                    if GEN_COUNTER % 8 == 0:
+                    if GEN_COUNTER % 4 == 0:
                         pyautogui.press('left')
                 
                 elif gesture == 'fullscreen' and before_last != 'fullscreen':
                     pyautogui.press('f')
                 
                 elif gesture == 'Cap_Subt' and before_last != 'Cap_Subt':
-                    pyautogui.press('m')
+                    pyautogui.press('c')
 
                 elif gesture == 'Neutral':
                     GEN_COUNTER = 0 
