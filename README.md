@@ -11,7 +11,7 @@ The interactions that will be implemented are:
 * increase and decrease the volume of both the media player and computer;
 * forward and backward jumps;
 * activate and deactivate fullscreen mode;
-* save the video link for watching later;
+* activate and deactivate subtitles/ closed captions, when these are available;
 * additionally, if user is sleeping or has left, automatically pause the video.  
 
 
