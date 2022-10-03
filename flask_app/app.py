@@ -1,12 +1,18 @@
-from utils import get_video_id
-from video_feed import generate_video, pd
-import json
+# from utils import get_video_id
+from video_feed import generate_video, json
 from flask import Flask, render_template, request, Response
-
-video_info_path = 'data/video_data.csv'
 
 app = Flask(__name__)
 
+STATE_PATH = '../data/player_state.json'
+
+def get_video_id(ytb_link):
+    """
+    extract a youtube video id
+    """
+    idx_pattern = ytb_link.find('?v=')
+    ytb_id = ytb_link[idx_pattern + 3 : idx_pattern + 3 + 11]
+    return ytb_id
 
 
 # Demo page
@@ -26,7 +32,7 @@ def demo():
 @app.route('/video_info', methods=['POST'])
 def get_video_info():
     output = request.get_json()
-    with open('data/player_state.json', 'w') as outfile:
+    with open(STATE_PATH, 'w') as outfile:
         json.dump(output, outfile)
 
     return ''
