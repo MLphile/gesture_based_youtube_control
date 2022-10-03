@@ -63,7 +63,7 @@ def get_class_id(key):
     if 48 <= key <= 57:  # numeric keys
         class_id = key - 48
         
-    if 65 <=  key <=  90:
+    if 65 <=  key <=  90: # alpha keys (capital letters)
         class_id = key - 55 
     return class_id
 
@@ -251,30 +251,6 @@ def normalize_distances(d0, distances_list):
     Works out normalized distances and returns an array of those.
     """
     return np.array(distances_list) / d0
-   
-
-def show_save_info(frame, save_icon, nb_saved , vertical_shift = 40, horintal_shift = 150):
-    """
-    Shows how many items are saved (e.g., numbers of Youtube video links to watch later)
-    Args:
-        frame (numpy array): Image from captured webcam video
-        save_icon (png image): Icon representing saved elements
-        nb_saved (int): How many items are saved
-        vertical_shift (int, optional): By how pixels to shift from frame's top edge to overlay save_icon. Defaults to 40.
-        horintal_shift (int, optional): By how pixels to shift from frame's right edge to overlay save_icon. Defaults to 150.
-    """
-    frame_w = frame.shape[1] 
-    icon_h, icon_w = save_icon.shape[:2]
-
-    # Overlay icon image on frame
-    frame[vertical_shift:vertical_shift + icon_h,
-            frame_w - horintal_shift:frame_w - horintal_shift + icon_w] = save_icon
-
-    # Show the number of links saved
-    text_y = vertical_shift + icon_h//2
-    text_x = frame_w - horintal_shift + icon_w + 10
-    cv.putText(frame, str(nb_saved), (text_x, text_y), cv.FONT_HERSHEY_SIMPLEX, 
-                1 , (255, 0, 0), 2, cv.LINE_AA)
 
 
 
