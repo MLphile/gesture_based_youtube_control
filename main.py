@@ -19,12 +19,6 @@ cap = cv.VideoCapture(0)
 cap.set(cv.CAP_PROP_FRAME_WIDTH, WIDTH)
 cap.set(cv.CAP_PROP_FRAME_HEIGHT, HEIGHT)
 
-# Icon to indicate saved links
-ICON_PATH = 'images/floppy-icon.png'
-save_icon = cv.resize(cv.imread(ICON_PATH), (50, 50), interpolation=cv.INTER_AREA)
-
-# Nombre of saved links
-COUNTER_SAVED = 0
 
 # important keypoints (wrist + tips coordinates)
 # for training the model
@@ -116,9 +110,6 @@ while True:
     # Detection and mouse zones
     det_zone, m_zone = det_mouse_zones(frame)
 
-    # Overlay Icon image and show how many saved links
-    show_save_info(frame, save_icon, nb_saved = COUNTER_SAVED)
-
 ############################################ GESTURE DETECTION / TRAINING POINT LOGGING ###########################################################
  
     results = hands.process(frame_rgb)
@@ -150,7 +141,6 @@ while True:
             logging_csv(class_id, mode, features, CSV_PATH)
 
             
-
             # inference
             conf, pred = predict(features, model)
             gesture = labels[pred]
@@ -169,7 +159,7 @@ while True:
                 else:
                     before_last = gest_hist[0]
 
-            ############### Mouse ##################
+            ############### mouse gestures ##################
                 if gesture == 'Move_mouse':
                     x, y = mouse_zone_to_screen(coordinates_list[9], m_zone)
                     
@@ -186,7 +176,7 @@ while True:
                     pyautogui.click()    
 
 
-            ############### Hand gestures ################## 
+            ############### Other gestures ################## 
                 if gesture == 'Play_Pause' and before_last != 'Play_Pause':
                     pyautogui.press('space')
                 
@@ -219,17 +209,11 @@ while True:
                 elif gesture == 'fullscreen' and before_last != 'fullscreen':
                     pyautogui.press('f')
                 
-                elif gesture == 'Save' and before_last != 'Save':
-                    # replace the <before_last> condition by a condition 
-                    # that checks if the link we'd like to save is already saved(e.g. in database)
-                    
-                    COUNTER_SAVED += 1
-                    # instead of using a counter, count the number of already saved links
-                    # in the database
+                elif gesture == 'Cap_Subt' and before_last != 'Cap_Subt':
+                    pyautogui.press('m')
 
                 elif gesture == 'Neutral':
                     GEN_COUNTER = 0 
-
 
                 # show detected gesture
                 cv.putText(frame, f'{gesture} | {conf: .2f}', (int(WIDTH*0.05), int(HEIGHT*0.07)),
