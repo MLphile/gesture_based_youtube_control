@@ -1,10 +1,11 @@
-## Short repo description  
+## Intro  
 This repo is about using Machine learning to recognise a set of hand gestures and use those to interact with youtube player.  
 The project falls within the area of gesture-based user-interfaces. These systems can for example:  
 * help people with disabilities to easily interact with a wide range of devices, which increases their autonomy and independency;
 * contribute to reduce the widespread of contagious diseases such as corona through the implementation of contactless devices;
 * improve user-experience, because gesture-based interfaces are most of the time more intuitive and easier to learn.  
 
+## What interactions
 The interactions that were implemented are:  
 * simple virtual mouse functionalities (move, left and right click);
 * play and pause the video;
@@ -12,7 +13,11 @@ The interactions that were implemented are:
 * forward and backward jumps;
 * activate and deactivate fullscreen mode;
 * activate and deactivate subtitles/ closed captions, when these are available;
-* additionally, if user is sleeping or has left, automatically pause the video.  
+* additionally, if user is sleeping or has left, automatically pause the video.
+In the images below you can see an example of the aforementioned interactions.
+<img src="detection_1.png" height = 400 px>
+<img src="detection_2.png" height = 400 px>
+
 
 You can find a demo of the project [here](https://youtu.be/gHVrGI3632s) !
 
