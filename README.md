@@ -16,4 +16,4 @@ The interactions that were implemented are:
 
 You can find a demo of the project [here](https://youtu.be/gHVrGI3632s) !
 
-All feedbacks on what can be improved are welcome :)
+All feedbacks on what can be improved are welcome :)  
