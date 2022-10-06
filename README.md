@@ -1,9 +1,9 @@
 ## Short repo description  
 This repo is about using Machine learning to recognise a set of hand gestures and use those to interact with youtube player.  
 The project falls within the area of gesture-based user-interfaces. These systems can for example:  
-* help people with disabilities to easily interact with a wide range of devices and by this means make them feel more autonomous and indepedent;
+* help people with disabilities to easily interact with a wide range of devices, which increases their autonomy and independency;
 * contribute to reduce the widespread of contagious diseases such as corona through the implementation of contactless devices;
-* improves user-experience, because gesture-based interfaces are most of the time more intuitive and easier to learn.  
+* improve user-experience, because gesture-based interfaces are most of the time more intuitive and easier to learn.  
 
 The interactions that were implemented are:  
 * simple virtual mouse functionalities (move, left and right click);
