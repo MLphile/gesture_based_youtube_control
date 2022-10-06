@@ -14,6 +14,6 @@ The interactions that were implemented are:
 * activate and deactivate subtitles/ closed captions, when these are available;
 * additionally, if user is sleeping or has left, automatically pause the video.  
 
-You can find a demo of the project [here](https://vimeo.com/757583916)!
+You can find a demo of the project [here](https://youtu.be/gHVrGI3632s) !
 
 All feedbacks on what can be improved are welcome :)
