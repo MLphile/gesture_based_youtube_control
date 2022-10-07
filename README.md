@@ -13,8 +13,8 @@ The interactions that were implemented are:
 * additionally, if user is sleeping or has left, automatically pause the video.  
 
 In the images below you can see an example of the aforementioned interactions.
-<img src="detection_1.png" height = 400 px>
-<img src="detection_2.png" height = 400 px>  
+<img src="readme_images/detection_1.png" height = 400 px>
+<img src="readme_images/detection_2.png" height = 400 px>  
 
 You can find a demo of the project [here](https://youtu.be/gHVrGI3632s) !
 
