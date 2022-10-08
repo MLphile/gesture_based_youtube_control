@@ -75,7 +75,7 @@ Contains important files for [running the web app](#running-the-web-app).
 ## Usage
 NB: I'm using windows 10.
 ### Installing libraries
-I suggest creating a virtual environment and installing the libraries there
+I suggest creating a virtual environment and installing the libraries there.
 ```
 cd project_folder_name
 python -m venv your_virtual_env_name
@@ -84,7 +84,7 @@ pip install -r requirements.txt
 ```
 ### Saving data
 Run `main.py`.  
-Press 'r' on the keyboard to activate the logging mode. By pressing '0' to '9', data get saved in a csv file (see example below); whereby the first column represents the class labels (pressed keys) and the other columns are the normalized keypoints and distances. To save class labels extending from '10' to potentially '35', you can press alphabet keys (capital letters) from 'A' to 'Z', respectively.  
+When the webcam video has loaded, press 'r' on the keyboard to activate the logging mode. By pressing '0' to '9', data get saved in a csv file (see example below); whereby the first column represents the class labels (pressed keys) and the other columns are the normalized keypoints and distances. To save class labels extending from '10' to potentially '35', you can press alphabet keys (capital letters) from 'A' to 'Z', respectively.  
 If you change the number of classes, make sure to correspondingly update the variable `n_classes` in `model_architecture.py` file.
 ### Training
 For training the model, simply run the entire file `train.ipynb`.  
@@ -95,7 +95,7 @@ cd flask_app
 python app.py
 ```
 You'll be provided with a link where the app is running (see image below).  
-Go to that link and you should have something like this:
+Go to that link and you should have something like this:  
 Copy paste a youtube video link in the input field and hit start.
 Both the youtube video and your webcam video will load into the web page.  
 Hand gestures are valid only when your hand is in the red box on your webcam video. This is to prevent unintentional interactions with the player (e.g. when scratching your face).
@@ -104,9 +104,8 @@ Hand gestures are valid only when your hand is in the red box on your webcam vid
 ## Limitations
 * In low light conditions, hand landmark predictions are less stable, which in turn degrades the quality of gesture detection. Same applies to face detectors, as the image gets less clear.
 * The sleepness detection works well only when your face is frontal to the camera. Dlib's face detector expects a frontal face.
-* No detection if you go far away from the web cam.
-Please, let me know if you face other issues or have any question.  
-All feedbacks on what to improve are welcome :) 
+* No detection if you go far away from the web cam.  
+Please, let me know if you face other issues or have any question. All feedbacks on what to improve are welcome :) 
 
 ## References
 * [MediaPipe](https://google.github.io/mediapipe/)
