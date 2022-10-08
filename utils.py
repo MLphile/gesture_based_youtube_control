@@ -136,7 +136,8 @@ def pre_process_landmark(landmark_list):
     """
     coordinates = np.array(landmark_list)
 
-    # relative coordinates to wrist
+    # relative coordinates to wrist (think of it as:
+    # where are the points with reference to the wrist?)
     wrist_coordinates = coordinates[0]
     relatives = coordinates - wrist_coordinates
 

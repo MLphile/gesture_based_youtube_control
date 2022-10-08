@@ -9,7 +9,7 @@ from utils import *
 
 # Set to normal mode (=> no recording of data)
 mode = 0
-CSV_PATH = 'data/keypoint.csv'
+CSV_PATH = 'data/gestures.csv'
 
 # Camera settings
 WIDTH = 1028//2
