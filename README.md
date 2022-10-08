@@ -113,3 +113,4 @@ All feedbacks on what to improve are welcome :)
 * Dlib
 * Nikita Kiselov
 * Adrian Rosebrock
+* Artificial Intelligence in Gestural Interfaces
