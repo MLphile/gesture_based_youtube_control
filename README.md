@@ -109,8 +109,8 @@ Please, let me know if you face other issues or have any question.
 All feedbacks on what to improve are welcome :) 
 
 ## References
-* MediaPipe
-* Dlib
-* Nikita Kiselov
-* Adrian Rosebrock
-* Artificial Intelligence in Gestural Interfaces
+* [MediaPipe](https://google.github.io/mediapipe/)
+* [Dlib](http://dlib.net/)
+* [Nikita Kiselov](https://github.com/kinivi)
+* [Adrian Rosebrock](https://pyimagesearch.com/author/adrian/)
+* [Artificial Intelligence in Gestural Interfaces](https://emerj.com/ai-sector-overviews/artificial-intelligence-in-gestural-interfaces/)
