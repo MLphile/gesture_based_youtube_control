@@ -1,11 +1,27 @@
 
 # Controlling Youtube player with hand gestures
 The goal of this project is to use an Artificial Neural Network to recognise a set of hand gestures and use those to interact with a YouTube player. Additionally, if the user is sleeping or has left, the player will get paused automatically.  Here is a [demo](https://www.youtube.com/watch?v=gHVrGI3632s)!!!  
-Below is a list of all the implemented interactions.
+Below are images of all the implemented interactions.  
+  
+<img src="https://user-images.githubusercontent.com/100664869/194719237-ee04b00e-1521-45d1-919c-47980ddb0e7c.png" height = 300 px>  
+<img src="https://user-images.githubusercontent.com/100664869/194719415-e18ae1f4-b8ae-4ebe-911b-4745579d6729.png" height = 300 px>  
 
 Why Youtube player, you might ask? Well, it's popular, there is no need to install a software locally, you can find pretty much any kind of visual content and it's free (as long as you're ok with advertisement ;).  
 But of course, you can implement the same technique to control a local media player or anything else; just make sure the application allows for keyboard shortcuts or has an API. 
-
+## Index
+1. [Intro](#intro)
+2. [Approach](#approach)  
+    * [Hand gestures](#hand-gestures)  
+    * [Sleepness detection](#sleepness-detection)    
+    * [Absence detection](#absence-detection)  
+3. [Project Structure](#project-structure)
+4. [Usage](#usage)
+    * [Installing libraries](#installing-libraries)
+    * [Saving data](#saving-data)
+    * [Training](#training)
+    * [Running the web app](#running-the-web-app)
+5. [Limitations](#limitations)
+6. [References](#references)
 
 ## Intro
 Gesture-based interfaces are systems that allow users to interact with them by using hand or other body components. These applications are getting more and more popular and have a wide range of use cases; for example in [home automation, healthcare, automative, virtual reality](https://emerj.com/ai-sector-overviews/artificial-intelligence-in-gestural-interfaces/), etc. If well designed, gesture-based interfaces feel more natural, intuitive and easier to learn.
@@ -54,22 +70,22 @@ The implementation of this feature was pretty straightforward:
  ┗━ 📜utils.py
 ```
 
-### main.py
+* __main.py__  
 For saving data and checking the output of models.
 
-### utils.py
+* __utils.py__  
 A collection of functions used in main.py.
 
-### train.ipynb
+* __train.ipynb__  
 For training and validating our artificial neural network.
 
-### data/
+* __data/__  
 Folder containing saved data (`gestures.csv`), general information about the saved data (`check_data.ipynb`) and gestures names (`label.csv`).  
 The `player_state.json` is automatically generated and gives information whether the player is in pause or playing mode.
 
-### models/
+* __models/__  
 Contains the trained neural network (`model.pth`) and it's architecture(`model_architecture.py`) as well as the face landmarks predictor (`shape_predictor_68_face_landmarks.dat`)
-### flask_app/
+* __flask_app/__  
 Contains important files for [running the web app](#running-the-web-app).
 
 ## Usage
