@@ -1,13 +1,11 @@
 
 # Controlling Youtube player with hand gestures
-The goal of this project is to use an Artificial Neural Network to recognise a set of hand gestures and use those to interact with a YouTube player. Additionally, if the user is sleeping or has left, the player will get paused automatically.  Here is a [demo](https://www.youtube.com/watch?v=gHVrGI3632s)!!!  
-Below are images of all the implemented interactions.  
-  
-<img src="https://user-images.githubusercontent.com/100664869/194719237-ee04b00e-1521-45d1-919c-47980ddb0e7c.png" height = 300 px>  
-<img src="https://user-images.githubusercontent.com/100664869/194719415-e18ae1f4-b8ae-4ebe-911b-4745579d6729.png" height = 300 px>  
+The goal of this project is to use an Artificial Neural Network to recognise a set of hand gestures and use those to interact with a YouTube player. Additionally, if the user is sleeping or has left, the player will get paused automatically.  Here is a [demo](https://www.youtube.com/watch?v=gHVrGI3632s)!!!
 
 Why Youtube player, you might ask? Well, it's popular, there is no need to install a software locally, you can find pretty much any kind of visual content and it's free (as long as you're ok with advertisement ;).  
-But of course, you can implement the same technique to control a local media player or anything else; just make sure the application allows for keyboard shortcuts or has an API. 
+But of course, you can implement the same technique to control a local media player or anything else; just make sure the application allows for keyboard shortcuts or has an API.  
+Here is a list of all the implemented interactions.  
+<img src="https://user-images.githubusercontent.com/100664869/194752626-125f0a5f-fca2-4a04-aefb-bf07679fe0a7.png">
 ## Index
 1. [Intro](#intro)
 2. [Approach](#approach)  
@@ -29,17 +27,22 @@ Gesture-based interfaces are systems that allow users to interact with them by u
 ### Hand gestures
 The approach used for hand gesture detection was highly inspired by [this project](https://github.com/kinivi/tello-gesture-control) from Nikita Kiselov.  One of the advantages of this approach is that, you don't need to collect tons of images to train your model, since you rather use landmarks as model inputs.  
 The worklow is as follows:  
-* I extracted 2D coordinates from [MediaPipe's hand detector](https://google.github.io/mediapipe/solutions/hands.html).  This detector normally outputs 3D 20 landmarks, as shown in the image below. In contrast to Nikita, I further restricted the points to only wrist and tip coordinates. Wrist coordinates were then subtracted from the rest of the points. These new points were then flattened and normalized by the maximum absolute value. Also, I computed the distances between keypoints 4, 8 and 12. Those distances were also normalized by the distance between points 0 and 5. It's worth mentioning that only the left hand was considered in this project.  
+* I extracted 2D coordinates from [MediaPipe's hand detector](https://google.github.io/mediapipe/solutions/hands.html).  This detector normally outputs 3D 20 landmarks, as shown in the image below.   
+In contrast to Nikita, I further restricted the points to only wrist and tip coordinates. Wrist coordinates were then subtracted from the rest of the points.   
+These new points were then flattened and normalized by the maximum absolute value. Also, I computed the distances between keypoints 4, 8 and 12. Those distances were also normalized by the distance between points 0 and 5.   
+It's worth mentioning that only the left hand was considered in this project.  
 <img src="https://user-images.githubusercontent.com/100664869/194749666-20208ade-89d6-4062-b177-f36e514c0b1e.png">  
 
 * Both normalized coordinates and distances were then joined together to formed our feature space, then saved, together with the target, for subsequent training. Go to [here](#saving-data) to see how to log data.
-* Because of the preceding preprocessing steps and the simplicity of the data (13 features and 13 classes of approx. 30 samples each), I trained a simple artificial neural network. The architecture looks like this:
+* Because of the preceding preprocessing steps and the simplicity of the data (13 features and 13 classes of approx. 30 samples each), I trained a simple artificial neural network. The architecture looks like this:  
+<img src=""> 
   
 ### Sleepness detection
 For this feature, I took inspiration from this [Adrian Rosebrock's blog](https://pyimagesearch.com/2017/05/08/drowsiness-detection-opencv/).  The idea is to :
 * Detect the face, using the frontal face detector from the Dlib library. This is [how to install Dlib on Ubuntu and macOS](https://pyimagesearch.com/2017/03/27/how-to-install-dlib/) and [here on windows 10](https://www.geeksforgeeks.org/how-to-install-dlib-library-for-python-in-windows-10/). 
 * Pass the detected face into Dlib shape predictor to output facial landmarks. The pretrained model can be downloaded [here](https://github.com/italojs/facial-landmarks-recognition/blob/master/shape_predictor_68_face_landmarks.dat) (95.1 MB).
 * From facial landmarks, extract eye landmarks and compute the so-called eye aspect ratio (EAR) to determine when the user is sleeping. User is considered to be sleeping if the EAR drops under a given threshold and stays under that value for at least a predefined number of consecutive frames.  
+  
 Alternatively, you can use [MediaPipe's face mesh](https://google.github.io/mediapipe/solutions/face_mesh.html), extract eye landmarks and compute the EAR. I've found MediaPipe to be more stable and robust (e.g., less sensitive to occlusion). The only problem is that it outputs 468 landmarks, which drastically slowed down the execution of my code. If you have a more powerful hardware, you should definitely give it a try. 
 ### Absence detection
 The implementation of this feature was pretty straightforward:
@@ -119,7 +122,7 @@ You'll be provided with a link where the app is running. In the image below, it'
 
 <img src="https://user-images.githubusercontent.com/100664869/194744362-67e00d66-0f01-49b2-b253-e4e3bd055003.png">  
 
-Go to that url, copy-paste a youtube video link in the input field and hit start.
+Go to that url, copy-paste a youtube video link in the input field and hit the button start.
 Both the youtube video and your webcam video will load into the web page.  
 Hand gestures are valid only when your hand is in the red box within your webcam video. This is to prevent unintentional interactions with the player (e.g. when scratching your face). You first need to move the mouse above the player and left-click to start the video; of course with hand gestures :) This puts the player in focus mode and allows the rest of interactions to be performed.  
 
