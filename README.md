@@ -30,6 +30,8 @@ Gesture-based interfaces are systems that allow users to interact with them by u
 The approach used for hand gesture detection was highly inspired by [this project](https://github.com/kinivi/tello-gesture-control) from Nikita Kiselov.  One of the advantages of this approach is that, you don't need to collect tons of images to train your model, since you rather use landmarks as model inputs.  
 The worklow is as follows:  
 * I extracted 2D coordinates from [MediaPipe's hand detector](https://google.github.io/mediapipe/solutions/hands.html).  This detector normally outputs 3D 20 landmarks, as shown in the image below. In contrast to Nikita, I further restricted the points to only wrist and tip coordinates. Wrist coordinates were then subtracted from the rest of the points. These new points were then flattened and normalized by the maximum absolute value. Also, I computed the distances between keypoints 4, 8 and 12. Those distances were also normalized by the distance between points 0 and 5. It's worth mentioning that only the left hand was considered in this project.  
+<img src="https://user-images.githubusercontent.com/100664869/194749666-20208ade-89d6-4062-b177-f36e514c0b1e.png">  
+
 * Both normalized coordinates and distances were then joined together to formed our feature space, then saved, together with the target, for subsequent training. Go to [here](#saving-data) to see how to log data.
 * Because of the preceding preprocessing steps and the simplicity of the data (13 features and 13 classes of approx. 30 samples each), I trained a simple artificial neural network. The architecture looks like this:
   
@@ -102,6 +104,9 @@ pip install -r requirements.txt
 Run `main.py`.  
 When the webcam video has loaded, press 'r' on the keyboard to activate the logging mode. By pressing '0' to '9', data get saved in a csv file (see example below); whereby the first column represents the class labels (pressed keys) and the other columns are the normalized keypoints and distances. To save class labels extending from '10' to potentially '35', you can press alphabet keys (capital letters) from 'A' to 'Z', respectively.  
 If you change the number of classes, make sure to correspondingly update the variable `n_classes` in `model_architecture.py` file.
+
+<img src="https://user-images.githubusercontent.com/100664869/194744094-7ee8244c-a750-4339-bdd5-1f57f8226564.png">  
+
 ### Training
 For training the model, simply run the entire file `train.ipynb`.  
 If you change the model architecture, make sure to correspondingly update the `model_architecture.py` file.
@@ -110,17 +115,21 @@ If you change the model architecture, make sure to correspondingly update the `m
 cd flask_app
 python app.py
 ```
-You'll be provided with a link where the app is running (see image below).  
-Go to that link and you should have something like this:  
-Copy paste a youtube video link in the input field and hit start.
-Both the youtube video and your webcam video will load into the web page.  
-Hand gestures are valid only when your hand is in the red box on your webcam video. This is to prevent unintentional interactions with the player (e.g. when scratching your face).
- 
+You'll be provided with a link where the app is running. In the image below, it's running for example at ___http://<span></span>127.0.0.1:5000___.  
 
+<img src="https://user-images.githubusercontent.com/100664869/194744362-67e00d66-0f01-49b2-b253-e4e3bd055003.png">  
+
+Go to that url, copy-paste a youtube video link in the input field and hit start.
+Both the youtube video and your webcam video will load into the web page.  
+Hand gestures are valid only when your hand is in the red box within your webcam video. This is to prevent unintentional interactions with the player (e.g. when scratching your face). You first need to move the mouse above the player and left-click to start the video; of course with hand gestures :) This puts the player in focus mode and allows the rest of interactions to be performed.  
+
+<img src="https://user-images.githubusercontent.com/100664869/194749265-5bd27c59-a248-440e-8702-5a442b83472b.gif">
+ 
 ## Limitations
 * In low light conditions, hand landmark predictions are less stable, which in turn degrades the quality of gesture detection. Same applies to face detectors, as the image gets less clear.
 * The sleepness detection works well only when your face is frontal to the camera. Dlib's face detector expects a frontal face.
 * No detection if you go far away from the web cam.  
+  
 Please, let me know if you face other issues or have any question. All feedbacks on what to improve are welcome :) 
 
 ## References
