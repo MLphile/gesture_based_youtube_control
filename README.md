@@ -34,8 +34,11 @@ It's worth mentioning that only the left hand was considered in this project.
 <img src="https://user-images.githubusercontent.com/100664869/194749666-20208ade-89d6-4062-b177-f36e514c0b1e.png">  
 
 * Both normalized coordinates and distances were then joined together to formed our feature space, then saved, together with the target, for subsequent training. Go to [here](#saving-data) to see how to log data.
-* Because of the preceding preprocessing steps and the simplicity of the data (13 features and 13 classes of approx. 30 samples each), I trained a simple artificial neural network. The architecture looks like this:  
-<img src=""> 
+* Because of the preceding preprocessing steps and the simplicity of the data (13 features and 13 classes of approx. 30 samples each), I trained a [simple artificial neural network](#training).  
+
+The image below depicts the general workflow.
+
+<img src="https://user-images.githubusercontent.com/100664869/194754857-cb9520dd-9ea5-4c6c-bc81-aed97e0e3195.png">  
   
 ### Sleepness detection
 For this feature, I took inspiration from this [Adrian Rosebrock's blog](https://pyimagesearch.com/2017/05/08/drowsiness-detection-opencv/).  The idea is to :
@@ -47,7 +50,12 @@ Alternatively, you can use [MediaPipe's face mesh](https://google.github.io/medi
 ### Absence detection
 The implementation of this feature was pretty straightforward:
 * Detect the presence of a face using [MediaPipe's face detector](https://google.github.io/mediapipe/solutions/face_detection.html).
-* If a face is not detected for at least a prefined number of consecutives frames, then the user is considered to be absent.
+* If a face is not detected for at least a prefined number of consecutives frames, then the user is considered to be absent.  
+
+The general workflow for the sleepness and absence detection looks like this:  
+
+<img src="https://user-images.githubusercontent.com/100664869/194755008-74282aa3-01a1-4ea3-8563-a1777278e752.png">  
+
 ## Project Structure
 ```bash
  ┣━ 📂data
@@ -94,7 +102,7 @@ Contains the trained neural network (`model.pth`) and it's architecture(`model_a
 Contains important files for [running the web app](#running-the-web-app).
 
 ## Usage
-NB: I'm using windows 10.
+NB: I'm using Windows 10.
 ### Installing libraries
 I suggest creating a virtual environment and installing the libraries there.
 ```
@@ -112,7 +120,8 @@ If you change the number of classes, make sure to correspondingly update the var
 
 ### Training
 For training the model, simply run the entire file `train.ipynb`.  
-If you change the model architecture, make sure to correspondingly update the `model_architecture.py` file.
+If you change the model architecture, make sure to correspondingly update the `model_architecture.py` file.  The architecture I used looks like this:  
+<img src="https://user-images.githubusercontent.com/100664869/194754632-14b9589f-7689-41b5-897f-0ed5339bbbf5.png"> 
 ### Running the web app
 ```
 cd flask_app
