@@ -35,7 +35,7 @@ These new points were then flattened and normalized by the maximum absolute valu
 It's worth mentioning that only the left hand was considered in this project.  
 <img src="https://user-images.githubusercontent.com/100664869/194749666-20208ade-89d6-4062-b177-f36e514c0b1e.png">  
 
-* Both normalized coordinates and distances were then joined together to formed our feature space, then saved, together with the target, for subsequent training. Go to [here](#saving-data) to see how to log data.
+* Both normalized coordinates and distances were then joined together to formed our feature space, then saved, together with the target, for subsequent training. Go [here](#saving-data) to see how to log data.
 * Because of the preceding preprocessing steps and the simplicity of the data (13 features and 13 classes of approx. 30 samples each), I trained a [simple artificial neural network](#training).  
 
 The image below depicts the general workflow.
@@ -89,7 +89,7 @@ The general workflow for the sleepness and absence detection looks like this:
 For saving data and checking the output of models.
 
 * __utils.py__  
-A collection of functions used in main.py.
+A collection of functions used in `main.py` .
 
 * __train.ipynb__  
 For training and validating our artificial neural network.
@@ -115,7 +115,7 @@ pip install -r requirements.txt
 ```
 ### Saving data
 Run `main.py`.  
-When the webcam video has loaded, press 'r' on the keyboard to activate the logging mode. By pressing '0' to '9', data get saved in a csv file (see example below); whereby the first column represents the class labels (pressed keys) and the other columns are the normalized keypoints and distances. To save class labels extending from '10' to potentially '35', you can press alphabet keys (capital letters) from 'A' to 'Z', respectively.  
+When the webcam video has loaded, press 'r' on the keyboard to activate the logging mode. By pressing '0' to '9', data get saved in `gestures.csv`; whereby the first column represents the class labels (pressed keys) and the other columns are the normalized keypoints and distances (see example below). To save class labels extending from '10' to potentially '35', you can press alphabet keys (capital letters) from 'A' to 'Z', respectively.  
 If you change the number of classes, make sure to correspondingly update the variable `n_classes` in `model_architecture.py` file.
 
 <img src="https://user-images.githubusercontent.com/100664869/194744094-7ee8244c-a750-4339-bdd5-1f57f8226564.png">  
@@ -133,9 +133,9 @@ You'll be provided with a link where the app is running. In the image below, it'
 
 <img src="https://user-images.githubusercontent.com/100664869/194744362-67e00d66-0f01-49b2-b253-e4e3bd055003.png">  
 
-Go to that url, copy-paste a youtube video link in the input field and hit the button start.
+Go to that url, copy-paste a youtube video link in the input field and hit the start button.
 Both the youtube video and your webcam video will load into the web page.  
-Hand gestures are valid only when your hand is in the red box within your webcam video. This is to prevent unintentional interactions with the player (e.g. when scratching your face). You first need to move the mouse above the player and left-click to start the video; of course with hand gestures :) This puts the player in focus mode and allows the rest of interactions to be performed.  
+Hand gestures are valid only when your hand is in the red box within your webcam video. This is to prevent unintentional interactions with the player (e.g. when scratching your face). You first need to move the mouse above the player and left-click to start the video; of course with hand gestures 😉. This puts the player in focus mode and allows the rest of interactions to be performed.  
 It's better to use the 'neutral' gesture between other gestures; this decreases false positive detections that might occur when transitioning directly from one gesture to another.
 
 <img src="https://user-images.githubusercontent.com/100664869/194749265-5bd27c59-a248-440e-8702-5a442b83472b.gif">
