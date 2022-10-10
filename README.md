@@ -159,7 +159,7 @@ ___Legend___:
 * The sleepness detection works well only when your face is frontal to the camera. Dlib's face detector expects a frontal face.
 * No detection if you go far away from the web cam.  
   
-Please, let me know if you face other issues or have any question. All feedbacks on what to improve are welcome :) 
+Please, let me know if you face other issues or have any question. All feedbacks on what to improve are welcome 😃! 
 
 ## References
 * [MediaPipe](https://google.github.io/mediapipe/)
