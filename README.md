@@ -1,11 +1,5 @@
 
 # Controlling Youtube player with hand gestures
-The goal of this project is to use an Artificial Neural Network to recognise a set of hand gestures and use those to interact with a YouTube player. Additionally, if the user is sleeping or has left, the player will get paused automatically.  Here is a [demo](https://www.youtube.com/watch?v=gHVrGI3632s)!!!
-
-Why Youtube player, you might ask? Well, it's popular, there is no need to install a software locally, you can find pretty much any kind of visual content and it's free (as long as you're ok with advertisement ;).  
-But of course, you can implement the same technique to control a local media player or anything else; just make sure the application allows for keyboard shortcuts or has an API.  
-Here is a list of all the implemented interactions.  
-<img src="https://user-images.githubusercontent.com/100664869/194752626-125f0a5f-fca2-4a04-aefb-bf07679fe0a7.png">
 ## Index
 1. [Intro](#intro)
 2. [Approach](#approach)  
@@ -20,15 +14,23 @@ Here is a list of all the implemented interactions.
     * [Running the web app](#running-the-web-app)
 5. [Limitations](#limitations)
 6. [References](#references)
-
 ## Intro
-Gesture-based interfaces are systems that allow users to interact with them by using hand or other body components. These applications are getting more and more popular and have a wide range of use cases; for example in [home automation, healthcare, automative, virtual reality](https://emerj.com/ai-sector-overviews/artificial-intelligence-in-gestural-interfaces/), etc. If well designed, gesture-based interfaces feel more natural, intuitive and easier to learn.
+Gesture-based interfaces are systems that allow users to interact with them by using hand or other body components. These applications are getting more and more popular and have a wide range of use cases; for example in [home automation, healthcare, automative, virtual reality](https://emerj.com/ai-sector-overviews/artificial-intelligence-in-gestural-interfaces/), etc. If well designed, gesture-based interfaces feel more natural, intuitive and easier to learn.  
+
+The goal of this project is to use an Artificial Neural Network to recognise a set of hand gestures and use those to interact with a YouTube player. Additionally, if the user is sleeping or has left, the player will get paused automatically.  Here is a [demo](https://www.youtube.com/watch?v=gHVrGI3632s)!!!
+
+Why Youtube player, you might ask? Well, it's popular, there is no need to install a software locally, you can find pretty much any kind of visual content and it's free (as long as you're ok with advertisement :wink:).  
+But of course, you can implement the same technique to control a local media player or anything else; just make sure the application allows for keyboard shortcuts or has an API.  
+
+
+
+
 ## Approach
 ### Hand gestures
 The approach used for hand gesture detection was highly inspired by [this project](https://github.com/kinivi/tello-gesture-control) from Nikita Kiselov.  One of the advantages of this approach is that, you don't need to collect tons of images to train your model, since you rather use landmarks as model inputs.  
 The worklow is as follows:  
-* I extracted 2D coordinates from [MediaPipe's hand detector](https://google.github.io/mediapipe/solutions/hands.html).  This detector normally outputs 3D 20 landmarks, as shown in the image below.   
-In contrast to Nikita, I further restricted the points to only wrist and tip coordinates. Wrist coordinates were then subtracted from the rest of the points.   
+* I extracted 2D coordinates from [MediaPipe's hand detector](https://google.github.io/mediapipe/solutions/hands.html).  This detector normally outputs 21 3D landmarks; the image below shows all the keypoints.   
+In contrast to Nikita, I restricted the points to only wrist and tip coordinates. Wrist coordinates were then subtracted from the rest of the points.   
 These new points were then flattened and normalized by the maximum absolute value. Also, I computed the distances between keypoints 4, 8 and 12. Those distances were also normalized by the distance between points 0 and 5.   
 It's worth mentioning that only the left hand was considered in this project.  
 <img src="https://user-images.githubusercontent.com/100664869/194749666-20208ade-89d6-4062-b177-f36e514c0b1e.png">  
@@ -46,7 +48,7 @@ For this feature, I took inspiration from this [Adrian Rosebrock's blog](https:/
 * Pass the detected face into Dlib shape predictor to output facial landmarks. The pretrained model can be downloaded [here](https://github.com/italojs/facial-landmarks-recognition/blob/master/shape_predictor_68_face_landmarks.dat) (95.1 MB).
 * From facial landmarks, extract eye landmarks and compute the so-called eye aspect ratio (EAR) to determine when the user is sleeping. User is considered to be sleeping if the EAR drops under a given threshold and stays under that value for at least a predefined number of consecutive frames.  
   
-Alternatively, you can use [MediaPipe's face mesh](https://google.github.io/mediapipe/solutions/face_mesh.html), extract eye landmarks and compute the EAR. I've found MediaPipe to be more stable and robust (e.g., less sensitive to occlusion). The only problem is that it outputs 468 landmarks, which drastically slowed down the execution of my code. If you have a more powerful hardware, you should definitely give it a try. 
+Alternatively, you can use [MediaPipe's face mesh](https://google.github.io/mediapipe/solutions/face_mesh.html), extract eye landmarks and compute the EAR. I've found MediaPipe to be more stable and robust (e.g., less sensitive to occlusion). The only problem is that it outputs 468 landmarks, which significantly slowed down the execution of my code. However, if you have a more powerful hardware, you should definitely give it a try. 
 ### Absence detection
 The implementation of this feature was pretty straightforward:
 * Detect the presence of a face using [MediaPipe's face detector](https://google.github.io/mediapipe/solutions/face_detection.html).
@@ -119,8 +121,8 @@ If you change the number of classes, make sure to correspondingly update the var
 <img src="https://user-images.githubusercontent.com/100664869/194744094-7ee8244c-a750-4339-bdd5-1f57f8226564.png">  
 
 ### Training
-For training the model, simply run the entire file `train.ipynb`.  
-If you change the model architecture, make sure to correspondingly update the `model_architecture.py` file.  The architecture I used looks like this:  
+For training the model, simply run the entire file `train.ipynb`. If you change data, you'll probably need to experiment to obtain an acceptable model's performance. 
+In case you change the model architecture, make sure to correspondingly update the `model_architecture.py` file.  The architecture I used looks like this:  
 <img src="https://user-images.githubusercontent.com/100664869/194754632-14b9589f-7689-41b5-897f-0ed5339bbbf5.png"> 
 ### Running the web app
 ```
@@ -134,9 +136,24 @@ You'll be provided with a link where the app is running. In the image below, it'
 Go to that url, copy-paste a youtube video link in the input field and hit the button start.
 Both the youtube video and your webcam video will load into the web page.  
 Hand gestures are valid only when your hand is in the red box within your webcam video. This is to prevent unintentional interactions with the player (e.g. when scratching your face). You first need to move the mouse above the player and left-click to start the video; of course with hand gestures :) This puts the player in focus mode and allows the rest of interactions to be performed.  
+It's better to use the 'neutral' gesture between other gestures; this decreases false positive detections that might occur when transitioning directly from one gesture to another.
 
 <img src="https://user-images.githubusercontent.com/100664869/194749265-5bd27c59-a248-440e-8702-5a442b83472b.gif">
- 
+Here is a list of all the implemented interactions.  
+<img src="https://user-images.githubusercontent.com/100664869/194752626-125f0a5f-fca2-4a04-aefb-bf07679fe0a7.png">  
+
+___Legend___:
+| Move mouse | Left click | right click | Play/Pause | Backward |
+| --- | --- | --- |--- |--- |
+| Move mouse cursor | mouse left click | mouse right click | Toggle Play/Pause | Seek backward 5 seconds |
+
+|Forward | Vol.down.gen | Vol.up.gen | vol.down.ytb | Vol.up.ytb |
+| --- | --- | --- |--- |--- |
+| Seek forward 5 seconds | Decrease computer's volume | Increase computer's volume | Decrease Youtube player's volume | Increase Youtube player's volume |
+
+| Full screen | Subtitle | Neutral | Sleepness | Absence |
+| --- | --- | --- |--- |--- |
+| Toggle full screen mode | Toggle On/Off subtitles/closed captions if available | Do nothing | Pause if user is sleeping | Pause if user has left |
 ## Limitations
 * In low light conditions, hand landmark predictions are less stable, which in turn degrades the quality of gesture detection. Same applies to face detectors, as the image gets less clear.
 * The sleepness detection works well only when your face is frontal to the camera. Dlib's face detector expects a frontal face.
