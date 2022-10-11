@@ -155,7 +155,7 @@ ___Legend___:
 | --- | --- | --- |--- |--- |
 | Toggle full screen mode | Toggle On/Off subtitles/closed captions if available | Do nothing | Pause if user is sleeping | Pause if user has left |
 ## Limitations
-* In low light conditions, hand landmark predictions are less stable, which in turn degrades the quality of gesture detection. Same applies to face detectors, as the image gets less clear.
+* In low light conditions, hand landmark predictions are less stable, which in turn degrades the quality of gesture detection. Same applies to face detectors (mainly Dlib), as the image gets less clear.
 * The sleepness detection works well only when your face is frontal to the camera. Dlib's face detector expects a frontal face.
 * No detection if you go far away from the web cam.  
   
